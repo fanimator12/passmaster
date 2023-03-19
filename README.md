@@ -9,8 +9,7 @@ Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 3. `python3 -m <your_virtual_env> venv`
 4. `source <your_virtual_env>/bin/activate`)
 5. `pip install -r requirements.txt`
-6. `python create_db.py`
-7. `uvicorn main:app --reload`
+6. `uvicorn main:app --reload`
 
 # Run frontend
 1. `cd frontend`
