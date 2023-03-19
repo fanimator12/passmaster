@@ -1,8 +1,43 @@
 from cryptography.fernet import Fernet
+from typing import List, Dict
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from database import SessionLocal
+import models
+
+def main():
+    pwd = {
+        "email": "114341354",
+        "facebook": "wrgdft45",
+        "youtube": "rwe6455#4",
+        "twitter": "70ydf9s^&h"
+    }
+
+    pm = PassMaster()
+
+app = FastAPI()
+
+db = SessionLocal()
+
+origins = [
+    "http://localhost:8000",
+    "localhost:8000",
+    "http://localhost:5173",
+    "localhost:5173"
+]
 
 
-class PasswordManager:
-    def __init_(self):
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+class PassMasterClass:
+    def __init__(self):
         self.key = None
         self.pwd_file = None
         self.pwd_dict = {}
@@ -42,12 +77,81 @@ class PasswordManager:
     def get_pwd(self, site):
         return self.pwd_dict[site]
 
-def main():
-    pwd = {
-        "email": "114341354",
-        "facebook": "wrgdft45",
-        "youtube": "rwe6455#4",
-        "twitter": "70ydf9s^&h"
-    }
+# Serializer
 
-    pm = PasswordManager()
+class PassMaster(BaseModel):
+    key: None
+    pwd_file: None
+    pwd_dict: Dict[str, str]
+
+    class Config:
+        orm_mode = True
+
+# CREATE NEW ITEM
+
+@app.post("/passmaster", response_model=PassMaster, status_code=status.HTTP_201_CREATED)
+def create_control_panel(passmaster: PassMaster):
+    new_panel = models.passmaster(
+        id=passmaster.id,
+        name=passmaster.name,
+        email=passmaster.email,
+        pwd=passmaster.pwd,
+    )
+
+    db_item = db.query(models.passmaster).filter(
+        models.passmaster.name == new_panel.name).first()
+
+    if db_item is not None:
+        raise HTTPException(
+            status_code=400, detail="Control Panel already exists.")
+
+    db.add(new_panel)
+    db.commit()
+
+    return new_panel
+
+# GET ITEM
+
+
+@app.get("/passmaster/{name}", response_model=PassMaster, status_code=status.HTTP_200_OK)
+def get_item(name: str):
+    item = db.query(models.PassMaster).filter(
+        models.PassMaster.name == name).first()
+    return item
+
+# GET ALL ITEMS
+
+
+@app.get("/passmaster", response_model=List[PassMaster], status_code=200)
+def get_all_items():
+    return db.query(models.PassMaster).all()
+
+# UPDATE ITEM
+
+
+@app.put("/passmaster/{name}", response_model=PassMaster, status_code=status.HTTP_200_OK)
+def update_item(name: str, PassMaster: PassMaster):
+    updated_item = db.query(models.PassMaster).filter(
+        models.PassMaster.name == name).first()
+    updated_item.email = PassMaster.email
+    updated_item.pwd = PassMaster.pwd
+
+    db.commit()
+
+    return updated_item
+
+# REMOVE EXISTING ITEM
+
+@app.delete("/passmaster")
+def delete_item(name: str):
+    deleted_item = db.query(models.PassMaster).filter(
+        models.PassMaster.name == name).first()
+
+    if deleted_item is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Item not found.")
+
+    db.delete(deleted_item)
+    db.commit()
+
+    return deleted_item
