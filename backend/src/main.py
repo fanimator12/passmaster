@@ -90,7 +90,7 @@ class PassMaster(BaseModel):
 # CREATE NEW ITEM
 
 @app.post("/passmaster", response_model=PassMaster, status_code=status.HTTP_201_CREATED)
-def create_control_panel(passmaster: PassMaster):
+def create_item(passmaster: PassMaster):
     new_panel = models.passmaster(
         id=passmaster.id,
         name=passmaster.name,
