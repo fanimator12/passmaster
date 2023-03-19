@@ -61,7 +61,7 @@ theme = {
       styleOverrides: {
         root: {
           marginLeft: theme.spacing(1),
-          ".Mui-selected": {
+          " .Mui-selected": {
             color: 'hsla(157, 100%, 50%, 1)',
             opacity: 0.9
           }

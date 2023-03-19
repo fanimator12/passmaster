@@ -13,7 +13,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 export default function ItemContent() {
   return (
-    <Paper sx={{ maxWidth: 936, margin: 'auto', overflow: 'hidden' }}>
+    <Paper sx={{ maxWidth: 936, margin: 'auto', overflow: 'hidden', background:'linear-gradient(135deg, hsla(217, 100%, 37%, 1) 0%, hsla(157, 100%, 50%, 1) 100%)' }}>
       <AppBar
         position="static"
         color="default"
@@ -49,7 +49,7 @@ export default function ItemContent() {
           </Grid>
         </Toolbar>
       </AppBar>
-      <Typography sx={{ my: 5, mx: 2 }} color="text.secondary" align="center">
+      <Typography sx={{ my: 5, mx: 2 }} color="#fff" align="center">
         No items for this vault yet
       </Typography>
     </Paper>
