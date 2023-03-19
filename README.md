@@ -2,7 +2,7 @@
 This project is made for SCP1 - IT Security and Cryptography in Practice course (VIA University College).
 
 # Prerequisites 
-Install <https://virtualenv.pypa.io/en/latest/installation.html>(virtualenv).
+Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 
 # Run backend
 1. `cd server`
