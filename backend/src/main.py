@@ -93,9 +93,9 @@ class PassMaster(BaseModel):
 def create_item(passmaster: PassMaster):
     new_panel = models.passmaster(
         id=passmaster.id,
-        name=passmaster.name,
-        email=passmaster.email,
-        pwd=passmaster.pwd,
+        key=passmaster.key,
+        pwd_file=passmaster.pwd_file,
+        pwd_dict=passmaster.pwd_dict
     )
 
     db_item = db.query(models.passmaster).filter(
@@ -113,10 +113,10 @@ def create_item(passmaster: PassMaster):
 # GET ITEM
 
 
-@app.get("/passmaster/{name}", response_model=PassMaster, status_code=status.HTTP_200_OK)
-def get_item(name: str):
+@app.get("/passmaster/{id}", response_model=PassMaster, status_code=status.HTTP_200_OK)
+def get_item(id: int):
     item = db.query(models.PassMaster).filter(
-        models.PassMaster.name == name).first()
+        models.PassMaster.id == id).first()
     return item
 
 # GET ALL ITEMS
@@ -129,12 +129,13 @@ def get_all_items():
 # UPDATE ITEM
 
 
-@app.put("/passmaster/{name}", response_model=PassMaster, status_code=status.HTTP_200_OK)
-def update_item(name: str, PassMaster: PassMaster):
+@app.put("/passmaster/{id}", response_model=PassMaster, status_code=status.HTTP_200_OK)
+def update_item(id: int, PassMaster: PassMaster):
     updated_item = db.query(models.PassMaster).filter(
-        models.PassMaster.name == name).first()
-    updated_item.email = PassMaster.email
-    updated_item.pwd = PassMaster.pwd
+        models.PassMaster.id == id).first()
+    updated_item.key = PassMaster.key
+    updated_item.pwd_file = PassMaster.pwd_file
+    updated_item.pwd_dict = PassMaster.pwd_dict
 
     db.commit()
 
@@ -143,9 +144,9 @@ def update_item(name: str, PassMaster: PassMaster):
 # REMOVE EXISTING ITEM
 
 @app.delete("/passmaster")
-def delete_item(name: str):
+def delete_item(id: int):
     deleted_item = db.query(models.PassMaster).filter(
-        models.PassMaster.name == name).first()
+        models.PassMaster.id == id).first()
 
     if deleted_item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
