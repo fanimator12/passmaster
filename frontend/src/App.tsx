@@ -1,5 +1,5 @@
 import './App.css';
-import Paperbase from './components/Paperbase';
+import Paperbase from './screens/Paperbase';
 
 function App() {
   return (
