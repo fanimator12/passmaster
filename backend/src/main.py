@@ -1,158 +1,160 @@
 from cryptography.fernet import Fernet
-from typing import List, Dict
-from fastapi import FastAPI, HTTPException, status
-from pydantic import BaseModel
+from typing import List
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
+from config import CORS_CONFIG
+from dependencies import login_for_access_token
 from database import SessionLocal
-import models
-
-def main():
-    pwd = {
-        "email": "114341354",
-        "facebook": "wrgdft45",
-        "youtube": "rwe6455#4",
-        "twitter": "70ydf9s^&h"
-    }
-
-    pm = PassMaster()
+from serializers import PassMaster, Token
 
 app = FastAPI()
 
 db = SessionLocal()
 
-origins = [
-    "http://localhost:8000",
-    "localhost:8000",
-    "http://localhost:5173",
-    "localhost:5173"
-]
-
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"]
+    allow_origins=CORS_CONFIG["allow_origins"],
+    allow_credentials=CORS_CONFIG["allow_credentials"],
+    allow_methods=CORS_CONFIG["allow_methods"],
+    allow_headers=CORS_CONFIG["allow_headers"]
 )
 
-class PassMasterClass:
-    def __init__(self):
-        self.key = None
-        self.pwd_file = None
-        self.pwd_dict = {}
+# CREATE TOKEN
 
-    def create_key(self, path):
-        self.key = Fernet.generate_key()
-        with open(path, 'wb') as f:
-            f.write(self.key)
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    return await login_for_access_token(form_data)
 
-    def load_key(self, path):
-        with open(path, 'rb') as f:
-            self.key = f.read()
-
-    def create_pwd_file(self, path, init_values=None):
-        self.pwd_file = path
-
-        if init_values is not None:
-            for key, value in init_values.items():
-                self.add_pwd(key, value)
-    
-    def load_pwd_file(self, path):
-        self.pwd_file = path
-
-        with open(path, 'r') as f:
-            for line in f:
-                site, encrypted = line.split(':')
-                self.pwd_dict[site] = Fernet(self.key).decrypt(encrypted.encode()).decode()
-
-    def add_pwd(self, site, pwd):
-        self.pwd_dict[site] = pwd
-
-        if self.pwd_file is not None:
-            with open(self.pwd_file, 'a+') as f:
-                encrypted = Fernet(self.key).encrypt(pwd.encode())
-                f.write(site + ':' + encrypted.decode() + '\n')
-
-    def get_pwd(self, site):
-        return self.pwd_dict[site]
-
-# Serializer
-
-class PassMaster(BaseModel):
-    key: None
-    pwd_file: None
-    pwd_dict: Dict[str, str]
-
-    class Config:
-        orm_mode = True
-
-# CREATE NEW ITEM
+# CREATE NEW PASS MANAGER
 
 @app.post("/passmaster", response_model=PassMaster, status_code=status.HTTP_201_CREATED)
-def create_item(passmaster: PassMaster):
-    new_panel = models.passmaster(
+def create_pass_manager(passmaster: PassMaster):
+
+    new_pass_manager = PassMaster(
         id=passmaster.id,
         key=passmaster.key,
-        pwd_file=passmaster.pwd_file,
         pwd_dict=passmaster.pwd_dict
     )
 
-    db_item = db.query(models.passmaster).filter(
-        models.passmaster.name == new_panel.name).first()
+    db_item = db.query(PassMaster).filter(
+        PassMaster.id == new_pass_manager.id).first()
 
     if db_item is not None:
         raise HTTPException(
-            status_code=400, detail="Control Panel already exists.")
+            status_code=400, detail="This Password Manager already exists.")
 
-    db.add(new_panel)
+    db.add(new_pass_manager)
     db.commit()
 
-    return new_panel
+    return new_pass_manager
 
-# GET ITEM
+# ADD PASSWORD
+@app.post("/passmaster/{id}/add_pwd", status_code=status.HTTP_200_OK)
+def add_pwd(id: int, site: str, pwd: str):
+    passmaster = db.query(PassMaster).filter(
+        PassMaster.id == id).first()
+
+    if passmaster is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Password Manager not found.")
+
+    fernet = Fernet(passmaster.key)
+    encrypted = fernet.encrypt(pwd.encode())
+    passmaster.pwd_dict[site] = encrypted.decode()
+
+    db.commit()
+
+    return {"detail": "Password added."}
+
+# GET PASSWORD
+@app.get("/passmaster/{id}/get_pwd/{site}", status_code=status.HTTP_200_OK)
+def get_pwd(id: int, site: str):
+    passmaster = db.query(PassMaster).filter(
+        PassMaster.id == id).first()
+
+    if passmaster is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Password Manager not found.")
+
+    encrypted = passmaster.pwd_dict.get(site)
+
+    if encrypted is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Site not found in PassMaster.")
+
+    fernet = Fernet(passmaster.key)
+    decrypted = fernet.decrypt(encrypted.encode()).decode()
+
+    return {"password": decrypted}
+
+# DELETE PASSWORD
+@app.delete("/passmaster/{id}/delete_pwd/{site}", status_code=status.HTTP_200_OK)
+def delete_pwd(id: int, site: str):
+    passmaster = db.query(PassMaster).filter(
+        PassMaster.id == id).first()
+
+    if passmaster is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Password Manager not found.")
+
+    if site not in passmaster.pwd_dict:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Site not found in PassMaster.")
+
+    del passmaster.pwd_dict[site]
+
+    db.commit()
+
+    return {"detail": "Password deleted."}
+
+# GET PASS MANAGER
 
 
 @app.get("/passmaster/{id}", response_model=PassMaster, status_code=status.HTTP_200_OK)
-def get_item(id: int):
-    item = db.query(models.PassMaster).filter(
-        models.PassMaster.id == id).first()
-    return item
+def get_pass_manager(id: int):
+    pass_manager = db.query(PassMaster).filter(
+        PassMaster.id == id).first()
+    return pass_manager
 
-# GET ALL ITEMS
+# GET ALL PASS MANAGERS
 
 
-@app.get("/passmaster", response_model=List[PassMaster], status_code=200)
-def get_all_items():
-    return db.query(models.PassMaster).all()
+@app.get("/passmaster", response_model=List[PassMaster], status_code=status.HTTP_200_OK)
+def get_all_pass_managers():
+    return db.query(PassMaster).all()
 
-# UPDATE ITEM
+# UPDATE PASS MANAGER
 
 
 @app.put("/passmaster/{id}", response_model=PassMaster, status_code=status.HTTP_200_OK)
-def update_item(id: int, PassMaster: PassMaster):
-    updated_item = db.query(models.PassMaster).filter(
-        models.PassMaster.id == id).first()
-    updated_item.key = PassMaster.key
-    updated_item.pwd_file = PassMaster.pwd_file
-    updated_item.pwd_dict = PassMaster.pwd_dict
+def update_pass_manager(id: int, passmaster_update: PassMaster):
+    passmaster = db.query(PassMaster).filter(
+        PassMaster.id == id).first()
 
-    db.commit()
-
-    return updated_item
-
-# REMOVE EXISTING ITEM
-
-@app.delete("/passmaster")
-def delete_item(id: int):
-    deleted_item = db.query(models.PassMaster).filter(
-        models.PassMaster.id == id).first()
-
-    if deleted_item is None:
+    if passmaster is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Item not found.")
+                            detail="Password Manager not found.")
 
-    db.delete(deleted_item)
+    passmaster.key = passmaster_update.key
+    passmaster.pwd_dict = passmaster_update.pwd_dict
+
     db.commit()
 
-    return deleted_item
+    return passmaster
+
+# REMOVE EXISTING PASS MANAGER
+
+@app.delete("/passmaster/{id}", status_code=status.HTTP_200_OK)
+def delete_pass_manager(id: int):
+    passmaster = db.query(PassMaster).filter(
+        PassMaster.id == id).first()
+
+    if passmaster is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Password Manager not found.")
+
+    db.delete(passmaster)
+    db.commit()
+
+    return {"detail": "Password Manager deleted."}
