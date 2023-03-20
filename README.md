@@ -7,7 +7,7 @@ Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 # Run backend
 1. `cd server`
 3. `python3 -m <your_virtual_env> venv`
-4. `source <your_virtual_env>/bin/activate`)
+4. `source <your_virtual_env>/bin/activate`
 5. `pip install -r requirements.txt`
 6. `uvicorn main:app --reload`
 
