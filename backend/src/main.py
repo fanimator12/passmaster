@@ -7,6 +7,7 @@ from config import CORS_CONFIG
 from dependencies import login_for_access_token
 from database import SessionLocal
 from serializers import PassMaster, Token
+from uuid import uuid4
 
 app = FastAPI()
 
@@ -22,15 +23,19 @@ app.add_middleware(
 
 # CREATE TOKEN
 
+
 @app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     return await login_for_access_token(form_data)
 
 # CREATE NEW PASS MANAGER
 
+
 @app.post("/passmaster", response_model=PassMaster, status_code=status.HTTP_201_CREATED)
 def create_pass_manager(passmaster: PassMaster):
 
+    passmaster.id = uuid4()
+    
     new_pass_manager = PassMaster(
         id=passmaster.id,
         key=passmaster.key,
@@ -50,6 +55,8 @@ def create_pass_manager(passmaster: PassMaster):
     return new_pass_manager
 
 # ADD PASSWORD
+
+
 @app.post("/passmaster/{id}/add_pwd", status_code=status.HTTP_200_OK)
 def add_pwd(id: int, site: str, pwd: str):
     passmaster = db.query(PassMaster).filter(
@@ -68,6 +75,8 @@ def add_pwd(id: int, site: str, pwd: str):
     return {"detail": "Password added."}
 
 # GET PASSWORD
+
+
 @app.get("/passmaster/{id}/get_pwd/{site}", status_code=status.HTTP_200_OK)
 def get_pwd(id: int, site: str):
     passmaster = db.query(PassMaster).filter(
@@ -89,6 +98,8 @@ def get_pwd(id: int, site: str):
     return {"password": decrypted}
 
 # DELETE PASSWORD
+
+
 @app.delete("/passmaster/{id}/delete_pwd/{site}", status_code=status.HTTP_200_OK)
 def delete_pwd(id: int, site: str):
     passmaster = db.query(PassMaster).filter(
@@ -144,6 +155,7 @@ def update_pass_manager(id: int, passmaster_update: PassMaster):
     return passmaster
 
 # REMOVE EXISTING PASS MANAGER
+
 
 @app.delete("/passmaster/{id}", status_code=status.HTTP_200_OK)
 def delete_pass_manager(id: int):
