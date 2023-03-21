@@ -1,4 +1,4 @@
-import { Grid, Typography } from "@mui/material";
+import { CardMedia, Grid, Typography } from "@mui/material";
 import Logo from "./Logo";
 
 export interface LoginBackgroundProps {
@@ -17,21 +17,26 @@ const LoginBackground = ({ background, slogan }: LoginBackgroundProps) => {
         xs={false}
         sm={4}
         md={7}
-        sx={{
-          // background: `${background}`,
-          // backgroundRepeat: "no-repeat",
-          // backgroundSize: "cover",
-          // backgroundPosition: "center",
-        }}
       >
+        <CardMedia
+          component="video"
+          className="backgroundVideo"
+          src={background}
+          autoPlay
+          muted
+          loop
+          sx={{ opacity: 0.8, filter: "brightness(0.3)" }}
+        />
+
         <Grid alignSelf="flex-end" sx={{ marginTop: 15 }}>
-          {background}
           <Typography
             color="#fff"
             sx={{
               display: { xs: "none", md: "block" },
               textAlign: "right",
-              fontSize: 60,
+              fontFamily: "Oswald Regular",
+              textTransform: "uppercase",
+              fontSize: 50,
               padding: "0 2em 6em 0",
             }}
           >
@@ -42,7 +47,11 @@ const LoginBackground = ({ background, slogan }: LoginBackgroundProps) => {
         <Grid
           alignItems="center"
           alignSelf="flex-start"
-          sx={{ display: { xs: "none", md: "flex" }, marginLeft: 10, marginBottom: 15 }}
+          sx={{
+            display: { xs: "none", md: "flex" },
+            marginLeft: 10,
+            marginBottom: 15,
+          }}
         >
           <Logo />
         </Grid>

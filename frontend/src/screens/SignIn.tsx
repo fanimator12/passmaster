@@ -2,7 +2,7 @@ import { Grid } from "@mui/material";
 import axios from "axios";
 import { useEffect, FormEvent, ChangeEvent, useState } from "react";
 import "../App.css";
-import Background from "../3dModels/QuantumCube";
+import Background from "../assets/background.mp4";
 import API_BASE from "../api/api_root";
 import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";

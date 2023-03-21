@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEffect, FormEvent, useState, ChangeEvent } from "react";
 import API_BASE from "../api/api_root";
 import "../App.css";
-import Background from "../3dModels/QuantumCube";
+import Background from "../assets/background.mp4";
 import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";
 import { USER_REGEX, PWD_REGEX } from "../regex/UserRegex";

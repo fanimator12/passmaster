@@ -11,3 +11,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@font-face {
+  font-family: "Oswald Regular";
+  src: local("OswaldRegular"),
+    url(fonts/Oswald-Regular.ttf) format("truetype");
+}
