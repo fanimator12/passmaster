@@ -65,7 +65,7 @@ export default function SideBar(props: DrawerProps) {
           <ListItemText>Home</ListItemText>
         </ListItem>
         {categories.map(({ id, children }) => (
-          <Box key={id} sx={{ bgcolor: 'transparent' }}>
+          <Box component="div" key={id} sx={{ bgcolor: 'transparent' }}>
             <ListItem sx={{ py: 2, px: 3 }}>
               <ListItemText sx={{ color: '#fff' }}>{id}</ListItemText>
             </ListItem>

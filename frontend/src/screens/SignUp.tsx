@@ -2,8 +2,8 @@ import { Grid } from "@mui/material";
 import axios from "axios";
 import { useEffect, FormEvent, useState, ChangeEvent } from "react";
 import API_BASE from "../api/api_root";
-import "../../App.css";
-import background from "../../assets/images/SignUp/background.jpg";
+import "../App.css";
+import Background from "../3dModels/QuantumCube";
 import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";
 import { USER_REGEX, PWD_REGEX } from "../regex/UserRegex";
@@ -80,7 +80,7 @@ const SignUp = ({ ...props }: SignUpProps) => {
 
   return (
     <Grid container className="fullscreen-container">
-      <LoginBackground background={background} slogan={"Create your Account"} />
+      <LoginBackground background={Background} slogan={"Create your Account"} />
       <Grid
         item
         alignSelf="center"

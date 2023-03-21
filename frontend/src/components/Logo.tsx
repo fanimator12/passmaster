@@ -3,8 +3,8 @@ import logo from '../assets/logo-no-background.png';
 
 const Logo = () => {
   return (
-      <Box>
-        <img src={logo} alt="PassMaster Logo" className="logo" style={{width: "100%", height: "auto", padding: 12}}/>
+      <Box component="div">
+        <img src={logo} alt="PassMaster Logo" className="logo" style={{width: 400, height: "auto", padding: 12}}/>
       </Box>
   );
 };

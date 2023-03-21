@@ -58,7 +58,7 @@ const LoginWindow = ({
   handleSubmit,
 }: LoginWindowProps) => {
   return (
-    <Box className="sign-window">
+    <Box className="sign-window" component="div">
       <Grid
         className="sign-title"
         display="flex"

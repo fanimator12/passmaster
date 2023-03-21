@@ -1,8 +1,8 @@
 import { Grid } from "@mui/material";
 import axios from "axios";
 import { useEffect, FormEvent, ChangeEvent, useState } from "react";
-import "../../App.css";
-import background from "../../assets/images/SignIn/background2.jpg";
+import "../App.css";
+import Background from "../3dModels/QuantumCube";
 import API_BASE from "../api/api_root";
 import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";
@@ -99,7 +99,7 @@ const SignIn = ({ ...props }: SignInProps) => {
       </Grid>
 
       <LoginBackground
-        background={background}
+        background={Background}
         slogan={"Sign into your Account"}
       />
     </Grid>

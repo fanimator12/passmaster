@@ -1,9 +1,11 @@
 import './App.css';
-import Paperbase from './screens/Paperbase';
+import Router from "./router/router";
 
 function App() {
   return (
-    <Paperbase />
+    <>
+    <Router />
+    </>
   );
 }
 

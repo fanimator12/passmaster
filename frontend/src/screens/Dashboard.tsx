@@ -5,13 +5,13 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Navigator from "../components/SideBar";
 import ItemContent from "../components/ItemContent";
-import Header from "../components/Header";
+import Header from "../components/DashboardHeader";
 import Copyright from "../components/Copyright";
 import theme from "../theme/theme";
 
 const drawerWidth = 256;
 
-export default function Paperbase() {
+export default function Dashboard() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const isSmUp = useMediaQuery(theme.breakpoints.up("sm"));
 
@@ -21,7 +21,7 @@ export default function Paperbase() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Box component="div" sx={{ display: "flex", minHeight: "100vh" }}>
         <CssBaseline />
         <Box
           component="nav"
@@ -40,7 +40,7 @@ export default function Paperbase() {
             sx={{ display: { sm: "block", xs: "none" } }}
           />
         </Box>
-        <Box
+        <Box component="div"
           sx={{
             flex: 1,
             display: "flex",

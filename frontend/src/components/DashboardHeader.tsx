@@ -16,15 +16,15 @@ import LogoIcon from './LogoIcon';
 const lightColor = 'hsla(157, 100%, 50%, 1)';
 const background = ''
 
-interface HeaderProps {
+interface DashboardHeaderProps {
   onDrawerToggle: () => void;
 }
 
-export default function Header(props: HeaderProps) {
+export default function DashboardHeader(props: DashboardHeaderProps) {
   const { onDrawerToggle } = props;
 
   return (
-    <Box sx={{background: background}}>
+    <Box sx={{background: background}} component="div">
       <AppBar position="sticky" elevation={0} sx={{background: 'transparent'}}>
         <Toolbar>
           <Grid container spacing={1} alignItems="center">

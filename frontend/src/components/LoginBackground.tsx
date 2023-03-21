@@ -18,13 +18,14 @@ const LoginBackground = ({ background, slogan }: LoginBackgroundProps) => {
         sm={4}
         md={7}
         sx={{
-          background: `linear-gradient(188deg, rgba(21, 34, 55, 0.2) 0%, rgba(0, 42, 105, 0.5) 100%), url(${background})`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          // background: `${background}`,
+          // backgroundRepeat: "no-repeat",
+          // backgroundSize: "cover",
+          // backgroundPosition: "center",
         }}
       >
         <Grid alignSelf="flex-end" sx={{ marginTop: 15 }}>
+          {background}
           <Typography
             color="#fff"
             sx={{
