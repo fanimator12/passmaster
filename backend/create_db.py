@@ -1,5 +1,5 @@
 from database import Base, engine
-from models import PassMaster
+import models
 
 print("Creating database ...")
 
