@@ -1,9 +1,10 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import PassMaster
-from typing import Optional
+from typing import List, Optional
 from cryptography.fernet import Fernet
 
 router = APIRouter()
@@ -25,11 +26,14 @@ class PasswordInput(BaseModel):
 
 
 class PassMasterOutput(BaseModel):
+    id: UUID
     website: str
     email: str
     username: str
     encrypted_password: str
 
+    class Config:
+        orm_mode = True
 
 class Crypto:
     def __init__(self):
@@ -46,7 +50,7 @@ class Crypto:
             with open("crypto_key.txt", "w") as key_file:
                 key_file.write(new_key.decode())
             return new_key
-    
+
     def encrypt(self, message):
         f = Fernet(self.key)
         encrypted = f.encrypt(message.encode())
@@ -61,8 +65,25 @@ class Crypto:
 
 crypto = Crypto()
 
+# GET ALL PASSWORDS
 
-@router.post("/save_password", response_model=PassMasterOutput)
+
+@router.get("/get_all_passwords", response_model=List[PassMasterOutput])
+def get_all_passwords(db: Session = Depends(get_db)):
+    passmasters = db.query(PassMaster).all()
+    passmasters_output = [PassMasterOutput(
+        id=passmaster.id,
+        website=passmaster.website,
+        email=passmaster.email,
+        username=passmaster.username,
+        encrypted_password=passmaster.encrypted_password
+    ) for passmaster in passmasters]
+    return passmasters_output
+
+# SAVE PASSWORD
+
+
+@router.post("/save_password", response_model=PassMasterOutput, status_code=200)
 def save_password(password_data: PasswordInput, db: Session = Depends(get_db)):
     # Encrypt the password using the generated key
     encrypted_password = crypto.encrypt(password_data.password)
@@ -82,27 +103,32 @@ def save_password(password_data: PasswordInput, db: Session = Depends(get_db)):
 
     # Return the created PassMaster object
     return PassMasterOutput(
+        id=new_passmaster.id,
         website=new_passmaster.website,
         email=new_passmaster.email,
         username=new_passmaster.username,
         encrypted_password=new_passmaster.encrypted_password
     )
 
+# GET PASSWORD
 
-@router.get("/get_password", response_model=PassMasterOutput)
-def get_password(website: str = Query(..., description="The website to search for"), db: Session = Depends(get_db)):
+
+@router.get("/get_password", response_model=PassMasterOutput, status_code=200)
+def get_password(passmaster_id: UUID, db: Session = Depends(get_db)):
     # Query the database for the PassMaster object with the given website
-    passmaster_record = db.query(PassMaster).filter(PassMaster.website == website).first()
+    passmaster_record = db.query(PassMaster).filter(
+        PassMaster.id == passmaster_id).first()
 
     # If the PassMaster object is not found, raise an HTTPException
     if passmaster_record is None:
-        raise HTTPException(status_code=404, detail="Website not found")
+        raise HTTPException(status_code=404, detail="Password record not found")
 
     # Decrypt the password using the generated key
     decrypted_password = crypto.decrypt(passmaster_record.encrypted_password)
 
     # Create a new PassMasterOutput object with the decrypted password
     passmaster_output = PassMasterOutput(
+        id=passmaster_record.id,
         website=passmaster_record.website,
         email=passmaster_record.email,
         username=passmaster_record.username,
@@ -111,3 +137,55 @@ def get_password(website: str = Query(..., description="The website to search fo
 
     # Return the PassMasterOutput object
     return passmaster_output
+
+# UPDATE PASSWORD
+
+
+@router.put("/update_password/{passmaster_id}", response_model=PassMasterOutput, status_code=200)
+def update_password(
+    passmaster_id: UUID,
+    password_data: PasswordInput,
+    db: Session = Depends(get_db)
+):
+    # Query the database for the PassMaster object with the given ID
+    passmaster_record = db.query(PassMaster).filter(
+        PassMaster.id == passmaster_id).first()
+
+    # If the PassMaster object is not found, raise an HTTPException
+    if passmaster_record is None:
+        raise HTTPException(status_code=404, detail="Password record not found")
+
+    # Update the PassMaster object with the new data
+    passmaster_record.website = password_data.website
+    passmaster_record.email = password_data.email
+    passmaster_record.username = password_data.username
+
+    # Encrypt the new password using the generated key
+    encrypted_password = crypto.encrypt(password_data.password)
+
+    # Update the encrypted password in the PassMaster object
+    passmaster_record.encrypted_password = encrypted_password
+
+    # Commit the changes to the database
+    db.commit()
+
+    # Return the updated PassMaster object
+    return PassMasterOutput.from_orm(passmaster_record)
+
+@router.delete("/delete_password/{passmaster_id}")
+def delete_password(passmaster_id: UUID, db: Session = Depends(get_db)):
+    # Query the database for the PassMaster object with the given ID
+    passmaster_record = db.query(PassMaster).filter(
+        PassMaster.id == passmaster_id).first()
+
+    # If the PassMaster object is not found, raise an HTTPException
+    if passmaster_record is None:
+        raise HTTPException(status_code=404, detail="Password record not found")
+
+    # Delete the PassMaster object from the database
+    db.delete(passmaster_record)
+    db.commit()
+
+    # Return a message indicating that the record was deleted
+    return {"message": f"Password record with id {passmaster_id} has been deleted."}
+
