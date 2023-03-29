@@ -53,7 +53,7 @@ const LoginBackground = ({ background, slogan }: LoginBackgroundProps) => {
             marginBottom: 15,
           }}
         >
-          <Logo />
+          <Logo width={"100%"} height={"50px"} />
         </Grid>
       </Grid>
     </>

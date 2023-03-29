@@ -56,7 +56,7 @@ export default function SideBar(props: DrawerProps) {
     <Drawer variant="permanent" {...other}>
       <List disablePadding>
         <ListItem sx={{ ...item, ...itemCategory }}>
-          <Logo />
+          <Logo width={'100%'} height={'auto'} />
         </ListItem>
         <ListItem sx={{ ...item, ...itemCategory }}>
           <ListItemIcon>
