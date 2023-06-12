@@ -5,7 +5,7 @@ This project is made for SCP1 - IT Security and Cryptography in Practice course 
 Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 
 # Run backend
-1. `cd server`
+1. `cd backend`
 3. `python3 -m <your_virtual_env> venv`
 4. `source <your_virtual_env>/bin/activate`
 5. `pip install -r requirements.txt`

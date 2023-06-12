@@ -47,8 +47,6 @@ class UserCreate(UserBase):
         return v
     
 class User(UserBase):
-    username: str
-    email: str
     hashed_password: str
     key: str
     access_token: Token
@@ -120,10 +118,10 @@ def get_current_user(
             raise "Missing sub claim in token"
         token_data = Token(email=email)
     except JWTError:
-        raise "Could not validate credentials"
+         raise HTTPException(status_code=401, detail="Could not validate credentials")
     user = db.query(UserModel).filter(UserModel.email == token_data.email).first()
     if user is None:
-        raise "Could not find user with provided credentials"
+        raise HTTPException(status_code=401, detail="Could not find user with provided credentials")
     crypto = Crypto(key)
     return user, crypto
 
