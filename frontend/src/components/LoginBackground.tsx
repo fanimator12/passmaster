@@ -1,10 +1,6 @@
 import { CardMedia, Grid, Typography } from "@mui/material";
 import Logo from "./Logo";
-
-export interface LoginBackgroundProps {
-  background: any;
-  slogan: string;
-}
+import { LoginBackgroundProps } from "../props";
 
 const LoginBackground = ({ background, slogan }: LoginBackgroundProps) => {
   return (

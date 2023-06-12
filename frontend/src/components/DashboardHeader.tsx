@@ -12,13 +12,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { Box } from '@mui/material';
 import LogoIcon from './LogoIcon';
+import { DashboardHeaderProps } from '../props';
 
 const lightColor = 'hsla(157, 100%, 50%, 1)';
 const background = ''
-
-interface DashboardHeaderProps {
-  onDrawerToggle: () => void;
-}
 
 export default function DashboardHeader(props: DashboardHeaderProps) {
   const { onDrawerToggle } = props;

@@ -8,6 +8,7 @@ import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";
 import { USER_REGEX, PWD_REGEX } from "../regex/UserRegex";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SignInProps {
   //Props come here
 }

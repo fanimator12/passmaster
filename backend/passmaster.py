@@ -1,13 +1,15 @@
+import json
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr, validator
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from models import PassMaster
+from models import Token as TokenModel, PassMaster, User as UserModel
 from typing import List, Optional
 from cryptography.fernet import Fernet
-from context import pwd_context, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-from jose import JWTError, jwt, ExpiredSignatureError
+from context import pwd_context
+from settings import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from jose import JWTError, jwt
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -20,6 +22,10 @@ def get_db():
     finally:
         db.close()
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -27,7 +33,6 @@ class UserBase(BaseModel):
 
     @validator("password")
     def password_must_be_strong(cls, v):
-        # Add your password strength validation here
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
         return v
@@ -40,25 +45,22 @@ class UserCreate(UserBase):
         if "password" in values and v != values["password"]:
             raise ValueError("Passwords do not match")
         return v
-
+    
 class User(UserBase):
-    id: UUID
+    username: str
+    email: str
     hashed_password: str
     key: str
-
+    access_token: Token
+    
     class Config:
         orm_mode = True
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
 class PasswordInput(BaseModel):
     website: str
     email: Optional[str]
     username: Optional[str]
     password: str
-
 
 class PassMasterOutput(BaseModel):
     id: UUID
@@ -85,37 +87,33 @@ class Crypto:
         decrypted = f.decrypt(ciphertext.encode())
         return decrypted.decode()
 
-def create_access_token(data: dict, expires_delta: timedelta = None):
-
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, key=SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 def get_token(email: str, password: str, db: Session = Depends(get_db)):
-    # Retrieve the user from the database
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(UserModel).filter(UserModel.email == email).first()
     
-    # Check if the user exists and if the password is correct
     if user and pwd_context.verify(password, user.hashed_password):
-        # If the user exists and the password is correct, generate a token with the user's email and key
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(data={"sub": user.email, "key": user.key}, expires_delta=access_token_expires)
         return {"access_token": access_token, "token_type": "bearer"}
     else:
-        # If the user does not exist or the password is incorrect, raise an HTTPException
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
 def get_current_user(
     db: Session = Depends(get_db),
-    token: str = Depends(get_token)
+    token: str = Depends(get_token),
+    key: str = SECRET_KEY
 ):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, key, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         key: str = payload.get("key")
         if email is None:
@@ -123,7 +121,7 @@ def get_current_user(
         token_data = Token(email=email)
     except JWTError:
         raise "Could not validate credentials"
-    user = db.query(User).filter(User.email == token_data.email).first()
+    user = db.query(UserModel).filter(UserModel.email == token_data.email).first()
     if user is None:
         raise "Could not find user with provided credentials"
     crypto = Crypto(key)
@@ -131,42 +129,41 @@ def get_current_user(
 
 # CREATE NEW USER
 
-@router.post("/create_user", response_model=Token)
+@router.post("/create_user", response_model=UserCreate, status_code=200)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
+    db_user = db.query(UserModel).filter(UserModel.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    db_user = db.query(User).filter(User.username == user.username).first()
+    db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already taken")
     hashed_password = pwd_context.hash(user.password)
     key = Fernet.generate_key().decode()
-    db_user = User(username=user.username, email=user.email, hashed_password=hashed_password, key=key)
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+    user_token = Token(access_token=access_token, token_type="bearer")
+    db_user = User(username=user.username, email=user.email, hashed_password=hashed_password, key=key, access_token=user_token)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": db_user.email}, key=db_user.key, expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "bearer"}
+    return UserCreate(user_id=db_user.id, username=db_user.username, email=db_user.email, access_token=user_token)
 
 # LOGIN FOR USER
 
 
 @router.post("/login", response_model=Token)
 def login_for_access_token(email: str, password: str, db: Session = Depends(get_db)):
-    # Retrieve the user from the database
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(UserModel).filter(UserModel.email == email).first()
     
-    # Check if the user exists and if the password is correct
     if user and pwd_context.verify(password, user.hashed_password):
-        # If the user exists and the password is correct, generate a token with the user's email and key
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(data={"sub": user.email, "key": user.key}, key=user.key, expires_delta=access_token_expires)
-        return {"access_token": access_token, "token_type": "bearer"}
+        return User(user_id=user.id, username=user.username, email=user.email, access_token=TokenModel(access_token=access_token, token_type="bearer"))
     else:
-        # If the user does not exist or the password is incorrect, raise an HTTPException
         raise HTTPException(status_code=401, detail="Incorrect email or password")
-        
+
+# GET USER
+  
 @router.get("/user", response_model=User)
 def get_user(current_user: User = Depends(get_current_user)):
     return current_user
@@ -193,10 +190,8 @@ def get_all_passwords(db: Session = Depends(get_db)):
 def save_password(password_data: PasswordInput, key: str, db: Session = Depends(get_db)):
     crypto = Crypto(key)
 
-    # Encrypt the password using the generated key
     encrypted_password = crypto.encrypt(password_data.password)
 
-    # Create a new PassMaster object with the encrypted password
     new_passmaster = PassMaster(
         website=password_data.website,
         email=password_data.email,
@@ -204,12 +199,10 @@ def save_password(password_data: PasswordInput, key: str, db: Session = Depends(
         encrypted_password=encrypted_password
     )
 
-    # Add the new PassMaster object to the database
     db.add(new_passmaster)
     db.commit()
     db.refresh(new_passmaster)
 
-    # Return the created PassMaster object
     return PassMasterOutput(
         id=new_passmaster.id,
         website=new_passmaster.website,
@@ -225,18 +218,14 @@ def save_password(password_data: PasswordInput, key: str, db: Session = Depends(
 def get_password(passmaster_id: UUID, key: str, db: Session = Depends(get_db)):
     crypto = Crypto(key)
     
-    # Query the database for the PassMaster object with the given website
     passmaster_record = db.query(PassMaster).filter(
         PassMaster.id == passmaster_id).first()
 
-    # If the PassMaster object is not found, raise an HTTPException
     if passmaster_record is None:
         raise HTTPException(status_code=404, detail="Password record not found")
 
-    # Decrypt the password using the generated key
     decrypted_password = crypto.decrypt(passmaster_record.encrypted_password)
 
-    # Create a new PassMasterOutput object with the decrypted password
     passmaster_output = PassMasterOutput(
         id=passmaster_record.id,
         website=passmaster_record.website,
@@ -245,7 +234,6 @@ def get_password(passmaster_id: UUID, key: str, db: Session = Depends(get_db)):
         encrypted_password=decrypted_password
     )
 
-    # Return the PassMasterOutput object
     return passmaster_output
 
 # UPDATE PASSWORD
@@ -260,45 +248,34 @@ def update_password(
 ):
     crypto = Crypto(key)
 
-    # Query the database for the PassMaster object with the given ID
     passmaster_record = db.query(PassMaster).filter(
         PassMaster.id == passmaster_id).first()
 
-    # If the PassMaster object is not found, raise an HTTPException
     if passmaster_record is None:
         raise HTTPException(status_code=404, detail="Password record not found")
 
-    # Update the PassMaster object with the new data
     passmaster_record.website = password_data.website
     passmaster_record.email = password_data.email
     passmaster_record.username = password_data.username
 
-    # Encrypt the new password using the generated key
     encrypted_password = crypto.encrypt(password_data.password)
 
-    # Update the encrypted password in the PassMaster object
     passmaster_record.encrypted_password = encrypted_password
 
-    # Commit the changes to the database
     db.commit()
 
-    # Return the updated PassMaster object
     return PassMasterOutput.from_orm(passmaster_record)
 
 @router.delete("/delete_password/{passmaster_id}")
 def delete_password(passmaster_id: UUID, db: Session = Depends(get_db)):
-    # Query the database for the PassMaster object with the given ID
     passmaster_record = db.query(PassMaster).filter(
         PassMaster.id == passmaster_id).first()
 
-    # If the PassMaster object is not found, raise an HTTPException
     if passmaster_record is None:
         raise HTTPException(status_code=404, detail="Password record not found")
 
-    # Delete the PassMaster object from the database
     db.delete(passmaster_record)
     db.commit()
 
-    # Return a message indicating that the record was deleted
     return {"message": f"Password record with id {passmaster_id} has been deleted."}
 

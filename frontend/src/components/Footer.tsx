@@ -1,30 +1,42 @@
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Copyright from './Copyright';
+import Copyright from "./Copyright";
+import "../App.css";
+import Logo from "./Logo";
+import { Box, Container, Typography, Grid } from "@mui/material";
+import { footerLinks, socialMedia } from "../constants";
+import NavLink from "./NavLink";
 
-interface FooterProps {
-  description: string;
-  title: string;
-}
-
-export default function Footer(props: FooterProps) {
-  const { description, title } = props;
-
+export default function Footer() {
   return (
-    <Box component="footer" sx={{ bgcolor: 'background.paper', py: 6 }}>
-      <Container maxWidth="lg">
-        <Typography variant="h6" align="center" gutterBottom>
-          {title}
-        </Typography>
-        <Typography
-          variant="subtitle1"
-          align="center"
-          color="text.secondary"
-          component="p"
+    <Box component="footer" sx={{ bgcolor: "background.paper", py: 6 }}>
+      <Container>
+        <Grid
+          container
+          display="flex"
+          alignItems="center"
+          justifyContent="flex-start"
+          spacing={2}
         >
-          {description}
-        </Typography>
+          <Grid item xs={12} md={6} justifyContent="space-between">
+            <Logo width={"266px"} height={"72.14px"} />
+            <Typography>
+              Unlock the Power of Passwords: Store, Secure, and Simplify Your
+              Digital Life with Ease!
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            {footerLinks.map((footerlink) => (
+              <Grid key={footerlink.title} item xs={6} sm={4} md={6} lg={4}>
+                <Typography variant="h4">{footerlink.title}</Typography>
+                {footerlink.urls.map((url) => (
+                  <NavLink key={url.name} title={url.name} url={url.url} />
+                ))}
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+      </Container>
+      <Container maxWidth="lg">
         <Copyright />
       </Container>
     </Box>
