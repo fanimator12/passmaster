@@ -54,7 +54,6 @@ class PassMaster(Base):
             decrypted_password = f.decrypt(encrypted_password.encode()).decode()
             return decrypted_password
         except InvalidToken:
-            # Handle the case where the token is invalid
             return None
 
     def __repr__(self):
