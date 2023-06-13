@@ -126,7 +126,6 @@ async def get_all_passwords(current_user: User = Depends(get_current_user), db: 
 
 # SAVE PASSWORD
 
-
 @router.post("/save_password", response_model=PassMasterOutput, status_code=status.HTTP_200_OK)
 async def save_password(password_data: PasswordInput, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
 
@@ -136,8 +135,9 @@ async def save_password(password_data: PasswordInput, current_user: User = Depen
         username=password_data.username,
         user_id=current_user.id
     )
-
-    new_passmaster.encrypt_password(password_data.password)
+    print(f"AES Key after instantiation: {new_passmaster.aes_key}") 
+    encrypted_password = new_passmaster.encrypt_password(password_data.password)
+    new_passmaster.encrypted_password = encrypted_password
 
     db.add(new_passmaster)
     db.commit()
@@ -151,6 +151,7 @@ async def save_password(password_data: PasswordInput, current_user: User = Depen
         encrypted_password=new_passmaster.encrypted_password
     )
 
+
 # GET PASSWORD
 
 
@@ -163,7 +164,7 @@ async def get_password(passmaster_id: UUID, current_user: User = Depends(get_cur
     if passmaster_record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Password record not found")
 
-    decrypted_password = current_user.crypto.decrypt(passmaster_record.encrypted_password)
+    decrypted_password = passmaster_record.get_decrypted_password(passmaster_record.encrypted_password)
 
     passmaster_output = PassMasterOutput(
         id=passmaster_record.id,
@@ -177,7 +178,6 @@ async def get_password(passmaster_id: UUID, current_user: User = Depends(get_cur
 
 # UPDATE PASSWORD
 
-
 @router.put("/update_password/{passmaster_id}", response_model=PassMasterOutput, status_code=status.HTTP_200_OK)
 async def update_password(
     passmaster_id: UUID,
@@ -185,7 +185,6 @@ async def update_password(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-
     passmaster_record = db.query(PassMaster).filter(
         PassMaster.id == passmaster_id, PassMaster.user_id == current_user.id
     ).first()
@@ -193,15 +192,22 @@ async def update_password(
     if passmaster_record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Password record not found")
 
-    passmaster_record.website = password_data.website
-    passmaster_record.email = password_data.email
-    passmaster_record.username = password_data.username
+    if password_data.website is not None:
+        passmaster_record.website = password_data.website
 
-    encrypted_password = current_user.crypto.encrypt(password_data.password)
+    if password_data.email is not None:
+        passmaster_record.email = password_data.email
 
-    passmaster_record.encrypted_password = encrypted_password
+    if password_data.username is not None:
+        passmaster_record.username = password_data.username
 
+    if password_data.password is not None:
+        encrypted_password = passmaster_record.encrypt_password(password_data.password)
+        passmaster_record.encrypted_password = encrypted_password
+
+    db.add(passmaster_record) 
     db.commit()
+    db.refresh(passmaster_record)
 
     return PassMasterOutput.from_orm(passmaster_record)
 

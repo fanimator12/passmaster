@@ -21,18 +21,17 @@ class UserInDB(User):
         orm_mode = True
 
 class PasswordInput(BaseModel):
-    website: str
+    website: Optional[str]
     email: Optional[str]
     username: Optional[str]
-    password: str
+    password: Optional[str]
 
 class PassMasterOutput(BaseModel):
     id: UUID
-    website: str
-    email: str
-    username: str
-    encrypted_password: str
-    decrypted_password: Optional[str]
+    website: Optional[str]
+    email: Optional[str]
+    username: Optional[str]
+    encrypted_password: Optional[str]
 
     class Config:
         orm_mode = True

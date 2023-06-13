@@ -3,6 +3,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from passmaster import router as passmaster_app
 from fastapi.middleware.cors import CORSMiddleware
+# from starlette.requests import Request
 
 CORS_CONFIG = {
     "allow_origins": ["*"],
@@ -50,6 +51,4 @@ def get_openapi():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
-
-
     

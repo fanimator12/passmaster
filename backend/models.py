@@ -1,9 +1,11 @@
 from database import Base
 from sqlalchemy import Column, String, DateTime, ForeignKey
-from sqlalchemy.orm import validates, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
-from cryptography.fernet import Fernet
+import base64
+from cryptography.fernet import Fernet, InvalidToken
+import hashlib
 from context import pwd_context
 from datetime import datetime, timedelta
 
@@ -14,26 +16,54 @@ class PassMaster(Base):
     website = Column(String, nullable=True)
     email = Column(String, nullable=True)
     username = Column(String, nullable=True)
-    encrypted_password = Column(String, nullable=False)
+    aes_key = Column(String, nullable=True)
+    encrypted_password = Column(String, nullable=True) 
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
 
     def generate_aes_key(self):
-        return Fernet.generate_key().decode()
+        if self.encrypted_password is None:
+            return None
+        key = hashlib.sha256(self.encrypted_password.encode()).digest()
+        return base64.urlsafe_b64encode(key).decode()
 
     def encrypt_password(self, password):
-        aes_key = self.generate_aes_key()
-        f = Fernet(aes_key.encode())
-        encrypted_password = f.encrypt(password.encode())
-        self.encrypted_password = encrypted_password.decode()
-        return aes_key
+        if password is None or password == self.get_decrypted_password(self.encrypted_password):
+            return self.encrypted_password
 
-    def get_decrypted_password(self, aes_key):
-        f = Fernet(aes_key.encode())
-        decrypted_password = f.decrypt(self.encrypted_password.encode())
-        return decrypted_password.decode()
+        if self.aes_key is None:
+            self.aes_key = self.generate_aes_key()
+            if self.aes_key is None:
+                return None
+
+        f = Fernet(self.aes_key.encode())
+        encrypted_password = f.encrypt(password.encode()).decode()
+        self.encrypted_password = encrypted_password
+        return encrypted_password
+
+    def get_decrypted_password(self, encrypted_password):
+        if self.aes_key is None:
+            self.aes_key = self.generate_aes_key()
+            if self.aes_key is None:
+                return None
+
+        if encrypted_password is None or encrypted_password == self.aes_key:
+            return None
+
+        f = Fernet(self.aes_key.encode())
+        try:
+            decrypted_password = f.decrypt(encrypted_password.encode()).decode()
+            return decrypted_password
+        except InvalidToken:
+            # Handle the case where the token is invalid
+            return None
 
     def __repr__(self):
         return f"<PassMaster website={self.website} username={self.username}>"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.aes_key = Fernet.generate_key().decode()
+        print(f"AES Key: {self.aes_key}")
     
 class User(Base):
     __tablename__ = 'users'
