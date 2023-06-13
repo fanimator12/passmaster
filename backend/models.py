@@ -46,10 +46,6 @@ class User(Base):
     
     passmasters = relationship("PassMaster", backref="user", primaryjoin="User.id == PassMaster.user_id")
 
-    @validates("hashed_password")
-    def validate_password(self, key, password):
-        return pwd_context.hash(password)
-
     def check_password(self, password):
         return pwd_context.verify(password, self.hashed_password)
     

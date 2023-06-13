@@ -10,6 +10,7 @@ Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 4. `source <your_virtual_env>/bin/activate`
 5. `pip install -r requirements.txt`
 6. `uvicorn main:app --reload`
+(I will run on http://127.0.0.1:8000/docs)
 
 # Run frontend
 1. `cd frontend`
