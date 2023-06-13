@@ -1,6 +1,6 @@
 from database import Base
-from sqlalchemy import Column, String, UniqueConstraint, DateTime
-from sqlalchemy.orm import validates
+from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy.orm import validates, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
 from cryptography.fernet import Fernet
@@ -11,26 +11,32 @@ class PassMaster(Base):
     __tablename__ = 'passmasters'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, unique=True, nullable=False)
-    website = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    username = Column(String, nullable=False)
+    website = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    username = Column(String, nullable=True)
     encrypted_password = Column(String, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
         return f"<PassMaster website={self.website} username={self.username}>"
+    
+    def get_decrypted_password(self, key):
+        f = Fernet(key)
+        decrypted_password = f.decrypt(self.encrypted_password.encode())
+        return decrypted_password.decode()
     
 class User(Base):
     __tablename__ = 'users'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
+    fullname = Column(String, nullable=True)
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    key = Column(String, nullable=False, default=Fernet.generate_key().decode())
-
-    # so no two users have the same values
-    __table_args__ = (UniqueConstraint('username', 'email', name='uq_user_username_email'),)
+    key = Column(String, nullable=True) # AES key for each user
     
+    passmasters = relationship("PassMaster", backref="user", primaryjoin="User.id == PassMaster.user_id")
+
     @validates("hashed_password")
     def validate_password(self, key, password):
         return pwd_context.hash(password)
@@ -40,6 +46,13 @@ class User(Base):
     
     def __repr__(self):
         return f"<User username={self.username} email={self.email}>"
+    
+    @property
+    def aes_cipher(self):
+        return Fernet(self.key.encode())
+    
+    def get_aes_key(self):
+        return self.key
     
 class Token(Base):
     __tablename__ = "tokens"

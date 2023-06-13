@@ -9,6 +9,13 @@ CORS_CONFIG = {
     "allow_headers": ["*"],
 }
 
+origins = [
+    "http://localhost:8000",
+    "localhost:8000",
+    "http://localhost:5432",
+    "localhost:5432"
+]
+
 app = FastAPI()
 
 app.include_router(passmaster_app, prefix="/passmaster")
