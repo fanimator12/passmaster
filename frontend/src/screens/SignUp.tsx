@@ -6,8 +6,9 @@ import "../App.css";
 import Background from "../assets/background.mp4";
 import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";
-import { USER_REGEX, PWD_REGEX } from "../regex/UserRegex";
+import { USER_REGEX, PWD_REGEX } from "../regex/regex";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SignUpProps {
   //Props come here
 }
@@ -59,7 +60,7 @@ const SignUp = ({ ...props }: SignUpProps) => {
     }
 
     try {
-      const response = await axios.post(API_BASE + `auth/users/`, {
+      const response = await axios.post(API_BASE + `/token`, {
         email,
         password: pwd,
       });

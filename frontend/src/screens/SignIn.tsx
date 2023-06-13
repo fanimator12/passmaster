@@ -6,7 +6,7 @@ import Background from "../assets/background.mp4";
 import API_BASE from "../api/api_root";
 import LoginBackground from "../components/LoginBackground";
 import LoginWindow from "../components/LoginWindow";
-import { USER_REGEX, PWD_REGEX } from "../regex/UserRegex";
+import { USER_REGEX, PWD_REGEX } from "../regex/regex";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SignInProps {
@@ -47,10 +47,10 @@ const SignIn = ({ ...props }: SignInProps) => {
     event.preventDefault();
 
     try {
-      const response = await axios.post(API_BASE + "/token", {
+      const response = await axios.post(`${API_BASE}/passmaster/token`, {
         username: username,
         password: pwd,
-      });
+    });
 
       localStorage.setItem('token', response.data.access_token);
 
@@ -82,7 +82,7 @@ const SignIn = ({ ...props }: SignInProps) => {
         <LoginWindow
           isSignUp={false}
           handleSubmit={handleSubmit}
-          title={"Sign In"}
+          title={"Sign Up"}
           link={"sign-up"}
           label={"New here?"}
           windowTitle={"welcome back!"}

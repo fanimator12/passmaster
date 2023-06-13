@@ -82,8 +82,7 @@ const LoginWindow = ({
             value={username}
             label={"Username"}
             variant={"outlined"}
-            type={"email"}
-            // error={emailFocus && !validEmail ? true : false}
+            type={"text"}
             errorMsg={validUsername ? <ErrorField msg={errUsernameMsg} /> : <></>}
             handleChange={handleUsernameField}
           />
@@ -95,7 +94,6 @@ const LoginWindow = ({
             variant={"outlined"}
             type={"password"}
             autoComplete={"current-password"}
-            // error={pwdFocus && !validPwd ? true : false}
             errorMsg={validPwd ? <ErrorField msg={errPwdMsg} /> : <></>}
             handleChange={handlePwdField}
           />
@@ -108,7 +106,6 @@ const LoginWindow = ({
                 label={"Repeat Password"}
                 variant={"outlined"}
                 type={"password"}
-                // error={matchFocus && !validMatch ? true : false}
                 errorMsg={validMatch ? <ErrorField msg={errPwdMsg} /> : <></>}
                 handleChange={handleMatchField}
               />
