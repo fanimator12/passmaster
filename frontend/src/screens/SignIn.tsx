@@ -16,47 +16,48 @@ export interface SignInProps {
 const SignIn = ({ ...props }: SignInProps) => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({});
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
-  const [validEmail, setValidEmail] = useState(false);
+  const [validUsername, setValidUsername] = useState(false);
   const [validPwd, setValidPwd] = useState(false);
-  const [errEmailMsg, setErrEmailMsg] = useState("");
+  const [errUsernameMsg, setErrUsernameMsg] = useState("");
   const [errPwdMsg, setErrPwdMsg] = useState("");
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    setValidEmail(USER_REGEX.test(email));
-  }, [email]);
+    setValidUsername(USER_REGEX.test(username));
+  }, [username]);
 
   useEffect(() => {
     setValidPwd(PWD_REGEX.test(pwd));
   }, [pwd]);
 
   useEffect(() => {
-    setErrEmailMsg("");
+    setErrUsernameMsg("");
     setErrPwdMsg("");
-  }, [email, pwd]);
+  }, [username, pwd]);
 
   const handleChecked = (event: ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    // TODO - Here comes the POST request to the API
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
 
     try {
-      const response = await axios.post(API_BASE + `auth/users/`, {
-        email,
+      const response = await axios.post(API_BASE + "/token", {
+        username: username,
         password: pwd,
       });
+
+      localStorage.setItem('token', response.data.access_token);
+
       setUser(response.data);
       setSuccess(true);
 
-      setEmail("");
+      setUsername("");
       setPwd("");
     } catch (e) {
       setError("Error: " + e);
@@ -81,20 +82,20 @@ const SignIn = ({ ...props }: SignInProps) => {
         <LoginWindow
           isSignUp={false}
           handleSubmit={handleSubmit}
-          title={"Sign Up"}
+          title={"Sign In"}
           link={"sign-up"}
           label={"New here?"}
           windowTitle={"welcome back!"}
           submitTitle={"Sign In"}
-          email={email}
+          username={username}
           pwd={pwd}
-          validEmail={validEmail}
+          validUsername={validUsername}
           validPwd={validPwd}
-          errEmailMsg={errEmailMsg}
+          errUsernameMsg={errUsernameMsg}
           errPwdMsg={errPwdMsg}
           checked={checked}
           handleChecked={handleChecked}
-          handleEmailField={(e) => setEmail(e.target.value)}
+          handleUsernameField={(e) => setUsername(e.target.value)}
           handlePwdField={(e) => setPwd(e.target.value)}
         />
       </Grid>

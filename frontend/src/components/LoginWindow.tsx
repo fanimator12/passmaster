@@ -16,18 +16,18 @@ export interface LoginWindowProps {
   windowTitle: string;
   submitTitle: string;
   helpText?: string;
-  email: string;
+  username: string;
   pwd: string;
   matchPwd?: string;
-  validEmail: boolean;
+  validUsername: boolean;
   validPwd: boolean;
   validMatch?: boolean;
-  errEmailMsg: string;
+  errUsernameMsg: string;
   errPwdMsg: string;
   checked: boolean;
   isDisabled?: boolean;
   handleChecked: (e: ChangeEvent<HTMLInputElement>) => void;
-  handleEmailField: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleUsernameField: (e: ChangeEvent<HTMLInputElement>) => void;
   handlePwdField: (e: ChangeEvent<HTMLInputElement>) => void;
   handleMatchField?: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
@@ -41,18 +41,18 @@ const LoginWindow = ({
   windowTitle,
   submitTitle,
   helpText,
-  email,
+  username,
   pwd,
   matchPwd,
-  validEmail,
+  validUsername,
   validPwd,
   validMatch,
-  errEmailMsg,
+  errUsernameMsg,
   errPwdMsg,
   checked,
   isDisabled,
   handleChecked,
-  handleEmailField,
+  handleUsernameField,
   handlePwdField,
   handleMatchField,
   handleSubmit,
@@ -79,13 +79,13 @@ const LoginWindow = ({
           <TypeTextField
             required={true}
             style={lightStyle}
-            value={email}
-            label={"Email"}
+            value={username}
+            label={"Username"}
             variant={"outlined"}
             type={"email"}
             // error={emailFocus && !validEmail ? true : false}
-            errorMsg={validEmail ? <ErrorField msg={errEmailMsg} /> : <></>}
-            handleChange={handleEmailField}
+            errorMsg={validUsername ? <ErrorField msg={errUsernameMsg} /> : <></>}
+            handleChange={handleUsernameField}
           />
           <TypeTextField
             required={true}
