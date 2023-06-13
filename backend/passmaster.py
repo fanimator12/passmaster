@@ -11,7 +11,7 @@ from settings import SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM
 from context import pwd_context, oauth2_scheme
 from jose import JWTError, jwt
 from schemas import (
-    User, UserIn, UserInDB, UserOut, PasswordInput,
+    User, UserIn, UserInDB, PasswordInput,
     PassMasterOutput, Token
 )
 
@@ -26,32 +26,26 @@ def get_db():
 
 class Crypto:
     def __init__(self, key):
-        self.key = key.encode()
+        self.key = key
 
     def encrypt(self, message):
         f = Fernet(self.key)
-        encrypted = f.encrypt(message.encode())
+        encrypted = f.encrypt(str(message).encode())
         return encrypted.decode()
 
     def decrypt(self, ciphertext):
         f = Fernet(self.key)
-        print(self.key)
         decrypted = f.decrypt(ciphertext.encode())
         return decrypted.decode()
-
-def get_user(db, username: str):
-    if username in db:
-        user_data = db[username]
-        return UserInDB(**user_data)
-    
+  
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
     return pwd_context.hash(password)
     
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
+def authenticate_user(username: str, password: str, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.username == username).first()
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -89,24 +83,16 @@ def get_current_user(
         username: str = payload.get("sub")
         if username is None:
             raise credential_exception
-        token_data = Token(username=username)
     except JWTError:
          raise credential_exception
-    user = get_user(db, username=token_data.username)
+    user = db.query(UserModel).filter(UserModel.username == username).first()
     if user is None:
         raise credential_exception
-    crypto = Crypto(key)
-    return user, crypto
-
-
-async def get_current_active_user(current_user: User, UserInDB = Depends(get_current_user)):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+    return user
 
 # CREATE NEW USER
 
-@router.post("/register", response_model=UserOut, status_code=200)
+@router.post("/register", response_model=UserInDB, status_code=200)
 async def create_user(user: UserIn, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter(UserModel.email == user.email).first()
     if db_user:
@@ -114,43 +100,43 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already taken")
-    hashed_password = pwd_context.hash(user.password)  
-    db_user = UserModel(username=user.username, email=user.email, hashed_password=hashed_password) 
+    hashed_password = pwd_context.hash(user.password)
+
+    aes_key = Fernet.generate_key()
+    crypto = Crypto(aes_key)
+    encrypted_key = crypto.encrypt(aes_key)
+
+    db_user = UserModel(username=user.username, email=user.email, fullname=user.fullname, hashed_password=hashed_password, key=encrypted_key) 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
-    user_token = Token(access_token=access_token, token_type="bearer")
-    
-    return UserOut(user_id=db_user.id, username=db_user.username, email=db_user.email, access_token=user_token, fullname=user.fullname)
+    return UserInDB(user_id=db_user.id, username=db_user.username, email=db_user.email, fullname=user.fullname, hashed_password=hashed_password, key=encrypted_key)
 
 # TOKEN FOR USER
 
-
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(db, form_data.username, form_data.password)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(form_data.username, form_data.password, db)
     
     if not user:
-        raise HTTPException(status_code=401, detail="Incorrect email or password", headers={"WWW-Authenticate": "Bearer"})
+        raise HTTPException(status_code=401, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
     else:
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
-        return {"access_token": access_token, "token_type": "bearer"}
+        return Token(access_token=access_token, token_type="bearer")
 
 # GET USER
   
 @router.get("/user", response_model=User)
-async def get_user(current_user: User = Depends(get_current_active_user)):
+async def get_user(current_user: User = Depends(get_current_user)):
     return current_user
 
     
 # GET ALL PASSWORDS
 
 @router.get("/get_all_passwords", response_model=List[PassMasterOutput])
-async def get_all_passwords(current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+async def get_all_passwords(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     passmasters = db.query(PassMaster).filter(PassMaster.user_id == current_user.id).all()
     passmasters_output = []
 
@@ -174,7 +160,7 @@ async def get_all_passwords(current_user: User = Depends(get_current_active_user
 
 
 @router.post("/save_password", response_model=PassMasterOutput, status_code=200)
-async def save_password(password_data: PasswordInput, current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+async def save_password(password_data: PasswordInput, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     encrypted_password = current_user.aes_cipher.encrypt(password_data.password)
 
     new_passmaster = PassMaster(
@@ -201,7 +187,7 @@ async def save_password(password_data: PasswordInput, current_user: User = Depen
 
 
 @router.get("/get_password/{passmaster_id}", response_model=PassMasterOutput, status_code=200)
-async def get_password(passmaster_id: UUID, current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+async def get_password(passmaster_id: UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     passmaster_record = db.query(PassMaster).filter(
         PassMaster.id == passmaster_id, PassMaster.user_id == current_user.id
     ).first()
@@ -228,7 +214,7 @@ async def get_password(passmaster_id: UUID, current_user: User = Depends(get_cur
 async def update_password(
     passmaster_id: UUID,
     password_data: PasswordInput,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     crypto = Crypto(current_user.key)
@@ -255,7 +241,7 @@ async def update_password(
 @router.delete("/delete_password/{passmaster_id}")
 async def delete_password(
     passmaster_id: UUID,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     passmaster_record = db.query(PassMaster).filter(

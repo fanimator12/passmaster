@@ -15,14 +15,9 @@ class UserIn(User):
     password: str 
 
 class UserInDB(User):
+    key: str
     hashed_password: str
     
-    class Config:
-        orm_mode = True
-
-class UserOut(User):
-    access_token: Token
-
     class Config:
         orm_mode = True
 
