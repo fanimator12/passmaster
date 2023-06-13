@@ -23,20 +23,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-class Crypto:
-    def __init__(self, key):
-        self.key = key
-
-    def encrypt(self, message):
-        f = Fernet(self.key)
-        encrypted = f.encrypt(str(message).encode())
-        return encrypted.decode()
-
-    def decrypt(self, ciphertext):
-        f = Fernet(self.key)
-        decrypted = f.decrypt(ciphertext.encode())
-        return decrypted.decode()
   
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -101,17 +87,12 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Username already taken")
     hashed_password = pwd_context.hash(user.password)
-
-    aes_key = Fernet.generate_key()
-    crypto = Crypto(aes_key)
-    encrypted_key = crypto.encrypt(aes_key)
-
-    db_user = UserModel(username=user.username, email=user.email, fullname=user.fullname, hashed_password=hashed_password, key=encrypted_key) 
+    db_user = UserModel(username=user.username, email=user.email, fullname=user.fullname, hashed_password=hashed_password) 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     
-    return UserInDB(user_id=db_user.id, username=db_user.username, email=db_user.email, fullname=user.fullname, hashed_password=hashed_password, key=encrypted_key)
+    return UserInDB(user_id=db_user.id, username=db_user.username, email=db_user.email, fullname=user.fullname, hashed_password=hashed_password)
 
 # TOKEN FOR USER
 
@@ -161,15 +142,15 @@ async def get_all_passwords(current_user: User = Depends(get_current_user), db: 
 
 @router.post("/save_password", response_model=PassMasterOutput, status_code=200)
 async def save_password(password_data: PasswordInput, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    encrypted_password = current_user.aes_cipher.encrypt(password_data.password)
 
     new_passmaster = PassMaster(
         website=password_data.website,
         email=password_data.email,
         username=password_data.username,
-        encrypted_password=encrypted_password,
         user_id=current_user.id
     )
+
+    new_passmaster.encrypt_password(password_data.password)
 
     db.add(new_passmaster)
     db.commit()

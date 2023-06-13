@@ -17,13 +17,23 @@ class PassMaster(Base):
     encrypted_password = Column(String, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
 
-    def __repr__(self):
-        return f"<PassMaster website={self.website} username={self.username}>"
-    
-    def get_decrypted_password(self, key):
-        f = Fernet(key)
+    def generate_aes_key(self):
+        return Fernet.generate_key().decode()
+
+    def encrypt_password(self, password):
+        aes_key = self.generate_aes_key()
+        f = Fernet(aes_key.encode())
+        encrypted_password = f.encrypt(password.encode())
+        self.encrypted_password = encrypted_password.decode()
+        return aes_key
+
+    def get_decrypted_password(self, aes_key):
+        f = Fernet(aes_key.encode())
         decrypted_password = f.decrypt(self.encrypted_password.encode())
         return decrypted_password.decode()
+
+    def __repr__(self):
+        return f"<PassMaster website={self.website} username={self.username}>"
     
 class User(Base):
     __tablename__ = 'users'
@@ -33,7 +43,6 @@ class User(Base):
     fullname = Column(String, nullable=True)
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    key = Column(String, nullable=True) # AES key for each user
     
     passmasters = relationship("PassMaster", backref="user", primaryjoin="User.id == PassMaster.user_id")
 
@@ -47,12 +56,6 @@ class User(Base):
     def __repr__(self):
         return f"<User username={self.username} email={self.email}>"
     
-    @property
-    def aes_cipher(self):
-        return Fernet(self.key.encode())
-    
-    def get_aes_key(self):
-        return self.key
     
 class Token(Base):
     __tablename__ = "tokens"

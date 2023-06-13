@@ -15,7 +15,6 @@ class UserIn(User):
     password: str 
 
 class UserInDB(User):
-    key: str
     hashed_password: str
     
     class Config:
