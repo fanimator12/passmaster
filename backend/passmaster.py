@@ -92,6 +92,7 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
 
+    # 2FA Authentication
     totp = TOTP(totp_secret)  
     qr_code = totp.provisioning_uri(user.email, issuer_name="PassMaster") 
     
