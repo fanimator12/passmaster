@@ -2,9 +2,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from models import PassMaster, Token as TokenModel, User as UserModel 
+from models import PassMaster, Token, User as UserModel 
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_limiter.depends import RateLimiter
 from datetime import timedelta, datetime
 from settings import SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM
 from context import pwd_context, oauth2_scheme
@@ -13,7 +14,11 @@ from schemas import (
     User, UserIn, UserInDB, PasswordInput,
     PassMasterOutput, Token
 )
+import time
+import redis
+from pyotp import TOTP, random_base32
 
+r = redis.Redis(host='localhost', port=6379, db=0)
 router = APIRouter()
 
 def get_db():
@@ -77,20 +82,81 @@ async def create_user(user: UserIn, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already taken")
+    
     hashed_password = pwd_context.hash(user.password)
-    db_user = UserModel(username=user.username, email=user.email, fullname=user.fullname, hashed_password=hashed_password) 
+    totp_secret = random_base32() 
+
+    db_user = UserModel(username=user.username, email=user.email, fullname=user.fullname,
+                        hashed_password=hashed_password) 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    
-    return UserInDB(user_id=db_user.id, username=db_user.username, email=db_user.email, fullname=user.fullname, hashed_password=hashed_password)
 
-# TOKEN FOR USER
+    totp = TOTP(totp_secret)  
+    qr_code = totp.provisioning_uri(user.email, issuer_name="PassMaster") 
+    
+    return UserInDB(id=db_user.id, username=db_user.username, email=db_user.email,
+                    fullname=user.fullname, hashed_password=hashed_password, qr_code=qr_code)
+
+# GET TOTP QR CODE & TOKEN
+
+@router.get("/totp/{username}")
+async def get_totp_secret(username: str, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    totp = TOTP(user.totp_secret) 
+    totp_token = totp.now()
+
+    return {"qr_code": user.totp_secret, "totp_token": totp_token}
+
+# VERIFY TOTP TOKEN
+
+@router.post("/verify_totp/{username}", dependencies=[Depends(RateLimiter(times=5, minutes=5))], response_model=Token)
+def verify_totp(username: str, totp_token: str, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User does not exist")
+
+    user_attempt_key = f"user:{user.username}:attempts"
+    totp = TOTP(user.totp_secret)
+
+    if not totp_token or not totp.verify(totp_token):
+        # in case of fail, increment attempt count
+        r.incr(user_attempt_key, 1)
+        r.expire(user_attempt_key, 60)
+        raise HTTPException(status_code=400, detail="Invalid TOTP token")
+
+    # in case of success, reset attempt count
+    r.set(user_attempt_key, 0)
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+
+    return Token(access_token=access_token, token_type="bearer")
+
+# JWT TOKEN FOR USER
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    print("Form Data:", form_data.username, form_data.password)
-    return get_token(form_data.username, form_data.password, db)
+    user = db.query(UserModel).filter(UserModel.username == form_data.username).first()
+
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+
+    user_attempt_key = f"user:{user.username}:attempts"
+
+    # in case of exceed limit, let it reset after 5 min
+    if r.exists(user_attempt_key) and int(r.get(user_attempt_key)) >= 3:
+        time.sleep(300)
+        r.set(user_attempt_key, 0)
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+
+    return Token(access_token=access_token, token_type="bearer")
+
 
 @router.get("/protected_endpoint", dependencies=[Depends(oauth2_scheme)])
 def protected_endpoint(token: str = Security(oauth2_scheme)):
@@ -127,7 +193,8 @@ async def get_all_passwords(current_user: User = Depends(get_current_user), db: 
 # SAVE PASSWORD
 
 @router.post("/save_password", response_model=PassMasterOutput, status_code=status.HTTP_200_OK)
-async def save_password(password_data: PasswordInput, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def save_password(password_data: PasswordInput, current_user: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
 
     new_passmaster = PassMaster(
         website=password_data.website,

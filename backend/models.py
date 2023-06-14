@@ -8,6 +8,7 @@ from cryptography.fernet import Fernet, InvalidToken
 import hashlib
 from context import pwd_context
 from datetime import datetime, timedelta
+import pyotp
 
 class PassMaster(Base):
     __tablename__ = 'passmasters'
@@ -16,8 +17,7 @@ class PassMaster(Base):
     website = Column(String, nullable=True)
     email = Column(String, nullable=True)
     username = Column(String, nullable=True)
-    aes_key = Column(String, nullable=True)
-    encrypted_password = Column(String, nullable=True) 
+    encrypted_password = Column(String, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
 
     def generate_aes_key(self):
@@ -61,8 +61,18 @@ class PassMaster(Base):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.aes_key = Fernet.generate_key().decode()
-        print(f"AES Key: {self.aes_key}")
+
+class Key(Base):
+    __tablename__ = 'keys'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    hashed_aes_key = Column(String, nullable=False)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        aes_key = Fernet.generate_key()
+        self.hashed_aes_key = hashlib.sha256(aes_key).hexdigest()
     
 class User(Base):
     __tablename__ = 'users'
@@ -72,11 +82,16 @@ class User(Base):
     fullname = Column(String, nullable=True)
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    totp_secret = Column(String, default=pyotp.random_base32, nullable=False)
     
     passmasters = relationship("PassMaster", backref="user", primaryjoin="User.id == PassMaster.user_id")
 
     def check_password(self, password):
         return pwd_context.verify(password, self.hashed_password)
+    
+    def check_totp(self, token):
+        totp = pyotp.TOTP(self.totp_secret)
+        return totp.verify(token)
     
     def __repr__(self):
         return f"<User username={self.username} email={self.email}>"

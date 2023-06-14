@@ -12,11 +12,13 @@ class User(BaseModel):
     fullname: Optional[str] = None
 
 class UserIn(User):
-    password: str 
+    password: str
 
 class UserInDB(User):
+    id: UUID
     hashed_password: str
-    
+    totp_secret: Optional[str] = None
+
     class Config:
         orm_mode = True
 

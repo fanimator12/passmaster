@@ -3,7 +3,9 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from passmaster import router as passmaster_app
 from fastapi.middleware.cors import CORSMiddleware
-# from starlette.requests import Request
+from aioredis import from_url
+from aioredis.client import Redis
+from fastapi_limiter import FastAPILimiter
 
 CORS_CONFIG = {
     "allow_origins": ["*"],
@@ -20,6 +22,14 @@ origins = [
 ]
 
 app = FastAPI()
+
+redis: Redis = None
+
+@app.on_event("startup")
+async def startup_event():
+    global redis
+    redis = await from_url("redis://localhost:6379/0")
+    await FastAPILimiter.init(redis)
 
 app.include_router(passmaster_app, prefix="/passmaster")
 
@@ -51,4 +61,3 @@ def get_openapi():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
-    
