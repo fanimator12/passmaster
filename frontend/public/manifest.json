@@ -17,5 +17,11 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "content_scripts": [
+    {
+      "matches": ["https://passmaster.net/*"],
+      "ts": ["contentScript.ts"]
+    }
+  ]  
 }
