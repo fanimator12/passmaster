@@ -11,7 +11,7 @@ from settings import SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM
 from context import pwd_context, oauth2_scheme
 from jose import JWTError, jwt
 from schemas import (
-    User, UserIn, UserInDB, PasswordInput,
+    TotpToken, User, UserIn, UserInDB, PasswordInput,
     PassMasterOutput, Token
 )
 import time
@@ -109,7 +109,9 @@ async def get_totp_secret(username: str, db: Session = Depends(get_db)):
     totp = TOTP(user.totp_secret) 
     totp_token = totp.now()
 
-    return {"qr_code": user.totp_secret, "totp_token": totp_token}
+    qr_code = totp.provisioning_uri(user.email, issuer_name="PassMaster") 
+
+    return {"qr_code": qr_code, "totp_token": totp_token}
 
 # VERIFY TOTP TOKEN
 

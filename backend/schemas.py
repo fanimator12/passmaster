@@ -37,3 +37,6 @@ class PassMasterOutput(BaseModel):
 
     class Config:
         orm_mode = True
+
+class TotpToken(BaseModel):
+    totp_token: str

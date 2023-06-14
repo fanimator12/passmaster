@@ -1,110 +1,60 @@
-import { Grid } from "@mui/material";
-import axios from "axios";
-import { useEffect, FormEvent, ChangeEvent, useState } from "react";
-import "../App.css";
-import Background from "../assets/background.mp4";
-import API_BASE from "../api/api_root";
-import LoginBackground from "../components/LoginBackground";
-import LoginWindow from "../components/LoginWindow";
-import { USER_REGEX, PWD_REGEX } from "../regex/regex";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface SignInProps {
-  //Props come here
-}
-
-const SignIn = ({ ...props }: SignInProps) => {
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({});
+const SignIn = () => {
   const [username, setUsername] = useState("");
-  const [pwd, setPwd] = useState("");
-  const [validUsername, setValidUsername] = useState(false);
-  const [validPwd, setValidPwd] = useState(false);
-  const [errUsernameMsg, setErrUsernameMsg] = useState("");
-  const [errPwdMsg, setErrPwdMsg] = useState("");
-  const [checked, setChecked] = useState(false);
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setValidUsername(USER_REGEX.test(username));
-  }, [username]);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    setValidPwd(PWD_REGEX.test(pwd));
-  }, [pwd]);
-
-  useEffect(() => {
-    setErrUsernameMsg("");
-    setErrPwdMsg("");
-  }, [username, pwd]);
-
-  const handleChecked = (event: ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await axios.post(`${API_BASE}/passmaster/token`, {
-        username: username,
-        password: pwd,
-    });
+      setLoading(true);
 
-      localStorage.setItem('token', response.data.access_token);
-
-      setUser(response.data);
-      setSuccess(true);
-
-      setUsername("");
-      setPwd("");
-    } catch (e) {
-      setError("Error: " + e);
+      navigate('/auth', { state: { username, password } });
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Sign In failed. Please contact for support.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    document.title = "Sign In | PassMaster";
-  });
-
   return (
-    <Grid container className="fullscreen-container-in">
-      <Grid
-        item
-        display="flex"
-        justifyContent="center"
-        alignSelf="center"
-        xs={12}
-        sm={8}
-        md={5}
-      >
-        <LoginWindow
-          isSignUp={false}
-          handleSubmit={handleSubmit}
-          title={"Sign Up"}
-          link={"sign-up"}
-          label={"New here?"}
-          windowTitle={"welcome back!"}
-          submitTitle={"Sign In"}
-          username={username}
-          pwd={pwd}
-          validUsername={validUsername}
-          validPwd={validPwd}
-          errUsernameMsg={errUsernameMsg}
-          errPwdMsg={errPwdMsg}
-          checked={checked}
-          handleChecked={handleChecked}
-          handleUsernameField={(e) => setUsername(e.target.value)}
-          handlePwdField={(e) => setPwd(e.target.value)}
-        />
-      </Grid>
-
-      <LoginBackground
-        background={Background}
-        slogan={"Sign into your Account"}
-      />
-    </Grid>
+    <div>
+      <h1>Sign In</h1>
+      {error && <p>{error}</p>}
+      <form onSubmit={handleLogin}>
+        <label>
+          Username:
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Password:
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
+        <br />
+        <input type="submit" value="Sign In" disabled={loading} />
+      </form>
+    </div>
   );
 };
 
