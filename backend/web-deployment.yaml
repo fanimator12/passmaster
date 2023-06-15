@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passmaster-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: passmaster-web
+  template:
+    metadata:
+      labels:
+        app: passmaster-web
+    spec:
+      containers:
+      - name: passmaster-web
+        image: gcr.io/passmaster-389912/passmaster-image:latest
+        env:
+        - name: BACKEND_VARIABLE
+          value: passmaster-backend
+        ports:
+        - containerPort: 8000
