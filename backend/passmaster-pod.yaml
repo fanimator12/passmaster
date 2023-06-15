@@ -9,7 +9,7 @@ spec:
       imagePullPolicy: Always
       livenessProbe:
         httpGet:
-          path: /api/v1/passmaster/
+          path: /passmaster
           port: 8000
         initialDelaySeconds: 5
         timeoutSeconds: 1

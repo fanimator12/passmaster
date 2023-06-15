@@ -16,6 +16,11 @@ services:
       - .env
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_URL=redis://passmaster-redis:6379/0
     volumes:
       - .:/app
   redis:
