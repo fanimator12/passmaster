@@ -1,15 +1,7 @@
-# syntax=docker/dockerfile:1
-
 FROM python:3.10.6
 
-WORKDIR /code
+WORKDIR /app
 
-COPY requirements.txt .
+COPY . /app
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-COPY . .
-
-EXPOSE 3100
-
-CMD ["gunicorn", "main:app"]

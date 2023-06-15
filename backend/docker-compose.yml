@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:14.8
+    restart: always
+    command: postgres -c 'max_connections=200'
+    environment:
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=fanimator"
+      - "POSTGRES_DB=passmaster_db"
+    ports:
+      - "5432:5432"
+  web:
+    build: .
+    command: sh -c "uvicorn main:app --reload --port=8000 --host=0.0.0.0"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"

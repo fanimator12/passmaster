@@ -28,7 +28,7 @@ redis: Redis = None
 @app.on_event("startup")
 async def startup_event():
     global redis
-    redis = await from_url("redis://localhost:6379/0")
+    redis = await from_url("redis://redis:6379/0")
     await FastAPILimiter.init(redis)
 
 app.include_router(passmaster_app, prefix="/passmaster")
@@ -60,4 +60,4 @@ def get_openapi():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
