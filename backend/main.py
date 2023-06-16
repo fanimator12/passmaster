@@ -28,7 +28,7 @@ redis: Redis = None
 @app.on_event("startup")
 async def startup_event():
     global redis
-    redis = await from_url("redis://backend_redis_1:6379/0")
+    redis = await from_url("redis://passmaster-redis:6379/0")
     await FastAPILimiter.init(redis)
 
 app.include_router(passmaster_app, prefix="/passmaster")

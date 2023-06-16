@@ -19,37 +19,27 @@ class PassMaster(Base):
     username = Column(String, nullable=True)
     encrypted_password = Column(String, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    key_id = Column(UUID(as_uuid=True), ForeignKey('keys.id'))
 
-    def generate_aes_key(self):
-        if self.encrypted_password is None:
-            return None
-        key = hashlib.sha256(self.encrypted_password.encode()).digest()
-        return base64.urlsafe_b64encode(key).decode()
+    key = relationship('Key', uselist=False, backref='passmaster')
 
     def encrypt_password(self, password):
         if password is None or password == self.get_decrypted_password(self.encrypted_password):
             return self.encrypted_password
 
-        if self.aes_key is None:
-            self.aes_key = self.generate_aes_key()
-            if self.aes_key is None:
-                return None
+        if self.key is None or self.key.aes_key is None:
+            return None
 
-        f = Fernet(self.aes_key.encode())
+        f = Fernet(self.key.aes_key)
         encrypted_password = f.encrypt(password.encode()).decode()
         self.encrypted_password = encrypted_password
         return encrypted_password
 
     def get_decrypted_password(self, encrypted_password):
-        if self.aes_key is None:
-            self.aes_key = self.generate_aes_key()
-            if self.aes_key is None:
-                return None
-
-        if encrypted_password is None or encrypted_password == self.aes_key:
+        if self.key is None or encrypted_password is None:
             return None
 
-        f = Fernet(self.aes_key.encode())
+        f = Fernet(self.key.aes_key)
         try:
             decrypted_password = f.decrypt(encrypted_password.encode()).decode()
             return decrypted_password
@@ -67,13 +57,12 @@ class Key(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, unique=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    hashed_aes_key = Column(String, nullable=False)
-    
+    aes_key = Column(String, nullable=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        aes_key = Fernet.generate_key()
-        self.hashed_aes_key = hashlib.sha256(aes_key).hexdigest()
-    
+        self.aes_key = Fernet.generate_key()
+
 class User(Base):
     __tablename__ = 'users'
 

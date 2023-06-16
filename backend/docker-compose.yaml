@@ -20,10 +20,11 @@ services:
       - db
       - redis
     environment:
-      - REDIS_URL=redis://backend_redis_1:6379/0
+      - REDIS_URL=redis://passmaster-redis:6379/0
     volumes:
       - .:/app
   redis:
-    image: "redis:alpine"
+    image: redis:latest
+    container_name: passmaster-redis
     ports:
       - "6379:6379"

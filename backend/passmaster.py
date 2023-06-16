@@ -18,7 +18,7 @@ import time
 import redis
 from pyotp import TOTP, random_base32
 
-r = redis.Redis(host='backend_redis_1', port=6379, db=0)
+r = redis.Redis(host='passmaster-redis', port=6379, db=0)
 router = APIRouter()
 
 def get_db():
@@ -205,7 +205,7 @@ async def save_password(password_data: PasswordInput, current_user: User = Depen
         username=password_data.username,
         user_id=current_user.id
     )
-    print(f"AES Key after instantiation: {new_passmaster.aes_key}") 
+
     encrypted_password = new_passmaster.encrypt_password(password_data.password)
     new_passmaster.encrypted_password = encrypted_password
 
