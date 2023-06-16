@@ -10,6 +10,7 @@ from context import pwd_context
 from datetime import datetime, timedelta
 import pyotp
 import logging
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,15 +30,20 @@ class PassMaster(Base):
 
     def encrypt_password(self, plaintext_password, key):
         f = Fernet(key)
-        self.encrypted_password = f.encrypt(plaintext_password.encode()).decode('utf-8') 
+        encrypted_password = f.encrypt(plaintext_password.encode())
+        self.encrypted_password = urlsafe_b64encode(encrypted_password).decode('utf-8') 
 
-    def get_decrypted_password(self):
-        if self.key is None or self.encrypted_password is None:
+    def get_decrypted_password(self, key):
+        if key is None or self.encrypted_password is None:
             return None
         
-        f = Fernet(self.key.aes_key)
+        if isinstance(key, str):
+            key = urlsafe_b64decode(key)
+    
+        encrypted_password = urlsafe_b64decode(self.encrypted_password)
+        f = Fernet(key)
         try:
-            decrypted_password = f.decrypt(self.encrypted_password)
+            decrypted_password = f.decrypt(encrypted_password).decode('utf-8')
             return decrypted_password
         except InvalidToken:
             return None

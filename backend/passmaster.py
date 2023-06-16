@@ -274,7 +274,7 @@ async def save_password(
         key=new_key,
     )
 
-    new_passmaster.encrypt_password(password_data.password, new_key.key)
+    new_passmaster.encrypt_password(password_data.password, new_key.aes_key)
 
     print(
         f"Encrypted password before saving: {new_passmaster.encrypted_password}"
