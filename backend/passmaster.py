@@ -18,7 +18,7 @@ import time
 import redis
 from pyotp import TOTP, random_base32
 
-r = redis.Redis(host='passmaster-redis', port=6379, db=0)
+r = redis.Redis(host='backend_redis_1', port=6379, db=0)
 router = APIRouter()
 
 def get_db():

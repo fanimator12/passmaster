@@ -6,7 +6,7 @@ services:
     environment:
       - "POSTGRES_USER=postgres"
       - "POSTGRES_PASSWORD=fanimator"
-      - "POSTGRES_DB=passmaster_db"
+      - "POSTGRES_DB=postgres"
     ports:
       - "5432:5432"
   web:
@@ -20,7 +20,7 @@ services:
       - db
       - redis
     environment:
-      - REDIS_URL=redis://passmaster-redis:6379/0
+      - REDIS_URL=redis://backend_redis_1:6379/0
     volumes:
       - .:/app
   redis:

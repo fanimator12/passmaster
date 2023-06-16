@@ -13,7 +13,7 @@ Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 6. `uvicorn main:app --reload`
 
 Check the API locally on localhost:8000/docs.
-Otherwise, the FastAPI is deployed on Google Kubernetes Engine (GKE) and can be accessed through this **[link](http://34.88.205.92:8000/docs)**.
+Otherwise, the FastAPI is deployed on Google Kubernetes Engine (GKE) and can be accessed through this **[link](http://34.88.11.138:8000/docs)**.
 
 # Run frontend
 1. `cd frontend`
