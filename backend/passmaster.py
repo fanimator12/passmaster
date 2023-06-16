@@ -325,7 +325,7 @@ async def get_password(
         )
 
     decrypted_password = passmaster_record.get_decrypted_password(
-        passmaster_record.encrypted_password
+        passmaster_record.key.aes_key
     )
 
     passmaster_output = PassMasterOutput(
@@ -359,20 +359,13 @@ async def update_password(
         .first()
     )
 
-    key = db.query(Key).filter(Key.user_id == current_user.id).first()
-
-    if key is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Key not found for user"
-        )
-
     if passmaster_record.key_id is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Password record is corrupted: missing key",
         )
 
-    passmaster_record.key = key
+    key = passmaster_record.key.aes_key
 
     if password_data.website is not None:
         passmaster_record.website = password_data.website
@@ -384,7 +377,7 @@ async def update_password(
         passmaster_record.username = password_data.username
 
     if password_data.password is not None:
-        encrypted_password = passmaster_record.encrypt_password(password_data.password)
+        encrypted_password = passmaster_record.encrypt_password(password_data.password, key)
         passmaster_record.encrypted_password = encrypted_password
 
     db.add(passmaster_record)
