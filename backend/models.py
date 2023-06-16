@@ -9,6 +9,10 @@ import hashlib
 from context import pwd_context
 from datetime import datetime, timedelta
 import pyotp
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class PassMaster(Base):
     __tablename__ = 'passmasters'
@@ -21,27 +25,19 @@ class PassMaster(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     key_id = Column(UUID(as_uuid=True), ForeignKey('keys.id'))
 
-    key = relationship('Key', uselist=False, backref='passmaster')
+    key = relationship('Key', back_populates='passmaster', uselist=False)
 
-    def encrypt_password(self, password):
-        if password is None or password == self.get_decrypted_password(self.encrypted_password):
-            return self.encrypted_password
+    def encrypt_password(self, plaintext_password, key):
+        f = Fernet(key)
+        self.encrypted_password = f.encrypt(plaintext_password.encode()).decode('utf-8') 
 
-        if self.key is None or self.key.aes_key is None:
+    def get_decrypted_password(self):
+        if self.key is None or self.encrypted_password is None:
             return None
-
-        f = Fernet(self.key.aes_key)
-        encrypted_password = f.encrypt(password.encode()).decode()
-        self.encrypted_password = encrypted_password
-        return encrypted_password
-
-    def get_decrypted_password(self, encrypted_password):
-        if self.key is None or encrypted_password is None:
-            return None
-
+        
         f = Fernet(self.key.aes_key)
         try:
-            decrypted_password = f.decrypt(encrypted_password.encode()).decode()
+            decrypted_password = f.decrypt(self.encrypted_password)
             return decrypted_password
         except InvalidToken:
             return None
@@ -57,11 +53,12 @@ class Key(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, unique=True, nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    aes_key = Column(String, nullable=False)
+    aes_key = Column(String)
+
+    passmaster = relationship('PassMaster', back_populates='key', uselist=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.aes_key = Fernet.generate_key()
 
 class User(Base):
     __tablename__ = 'users'
@@ -84,7 +81,6 @@ class User(Base):
     
     def __repr__(self):
         return f"<User username={self.username} email={self.email}>"
-    
     
 class Token(Base):
     __tablename__ = "tokens"
