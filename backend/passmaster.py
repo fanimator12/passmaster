@@ -281,7 +281,6 @@ async def save_password(
     )  # Debug print
 
     db.add(new_passmaster)
-    db.flush()
     db.commit()
     db.refresh(new_passmaster)
 
@@ -365,7 +364,8 @@ async def update_password(
             detail="Password record is corrupted: missing key",
         )
 
-    key = passmaster_record.key.aes_key
+    key = Fernet.generate_key()
+    new_key = Key(aes_key=key.decode(), user_id=current_user.id)
 
     if password_data.website is not None:
         passmaster_record.website = password_data.website
@@ -376,15 +376,19 @@ async def update_password(
     if password_data.username is not None:
         passmaster_record.username = password_data.username
 
-    if password_data.password is not None:
-        encrypted_password = passmaster_record.encrypt_password(password_data.password, key)
-        passmaster_record.encrypted_password = encrypted_password
+    passmaster_record.encrypt_password(password_data.password, new_key.aes_key)
 
     db.add(passmaster_record)
     db.commit()
     db.refresh(passmaster_record)
 
-    return PassMasterOutput.from_orm(passmaster_record)
+    return PassMasterOutput(
+        id=passmaster_record.id,
+        website=passmaster_record.website,
+        email=passmaster_record.email,
+        username=passmaster_record.username,
+        encrypted_password=passmaster_record.encrypted_password,
+    )
 
 
 @router.delete("/delete_password/{passmaster_id}")
