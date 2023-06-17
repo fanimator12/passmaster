@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getTotp, loginUser, verifyTotp } from "../api/api_root";
 import { QRCodeSVG } from "qrcode.react";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  CircularProgress,
+} from "@material-ui/core";
+import Alert from "@mui/material/Alert";
 
 const TwoFactorAuth = () => {
   const [totpToken, setTotpToken] = useState("");
@@ -47,33 +55,55 @@ const TwoFactorAuth = () => {
   }, [username]);
 
   return (
-    <div>
-      <h1>Download Authenticator app for Android or iOS</h1>
-      {error && <p>{error}</p>}
-      {qrCode && <QRCodeSVG value={qrCode} />}
+    <Container
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        margin: "auto",
+        display: "flex",
+        justifyContent: "center",
+        textAlign: "center",
+        alignItems: "center",
+      }}
+    >
       <form onSubmit={handleTotp}>
-      <label>
-          Username:
-          <input
-            type="text"
-            value={username}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          One-time 2FA Code:
-          <input
-            type="text"
-            value={totpToken}
-            onChange={(e) => setTotpToken(e.target.value)}
-            required
-          />
-        </label>
-        <br />
-        <input type="submit" value="Verify" disabled={loading} />
+        {error && <Alert severity="error">{error}</Alert>}
+        {qrCode && <QRCodeSVG value={qrCode} />}
+        <Typography variant="h6" gutterBottom>
+          Download Authenticator app for Android or iOS
+        </Typography>
+        <TextField
+          label="Username"
+          type="text"
+          value={username}
+          disabled
+          required
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="One-time 2FA Code"
+          type="text"
+          value={totpToken}
+          onChange={(e) => setTotpToken(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          disabled={loading}
+        >
+          Verify
+        </Button>
+        {loading && <CircularProgress />}
       </form>
-    </div>
+    </Container>
   );
 };
 
