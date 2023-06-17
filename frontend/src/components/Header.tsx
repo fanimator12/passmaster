@@ -7,12 +7,10 @@ import {
   Button,
   IconButton,
   Box,
-  Modal,
   Dialog,
 } from "@mui/material";
 import NavDrawer from "./NavDrawer";
 import NavLink from "./NavLink";
-import { headerLinks } from "../constants";
 import { HeaderProps } from "../props";
 import Logo from "./Logo";
 import { useState } from "react";

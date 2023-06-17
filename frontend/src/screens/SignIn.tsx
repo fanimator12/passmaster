@@ -126,7 +126,7 @@ const SignIn = () => {
         aria-labelledby="sign-up-modal-title"
         aria-describedby="sign-up-modal-description"
       >
-        <SignUp handleClose={handleCloseSignUp} />
+        <SignUp />
       </Dialog>
     </div>
   );

@@ -11,8 +11,7 @@ import {
 import Alert from "@mui/material/Alert";
 import { Link, useNavigate } from "react-router-dom";
 import field_style from "../styles/LightTextFieldStyle";
-import { SignUpProps } from "../props";
-const SignUp = ({ handleClose }: SignUpProps) => {
+const SignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullname, setFullname] = useState("");
