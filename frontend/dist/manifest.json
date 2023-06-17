@@ -1,0 +1,27 @@
+{
+  "short_name": "PassMaster",
+  "name": "PassMaster - Password Manager",
+  "description": "Unlock Simplicity: PassMaster, Your Key to a Secure Digital Life",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Open the popup"
+  },
+  "permissions": ["activeTab"],
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "content_scripts": [
+    {
+      "matches": ["https://passmaster.net/*"],
+      "ts": ["contentScript.ts"]
+    }
+  ]  
+}
