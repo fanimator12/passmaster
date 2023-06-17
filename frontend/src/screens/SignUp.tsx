@@ -7,10 +7,9 @@ import {
   Container,
   Typography,
   CircularProgress,
-} from "@material-ui/core";
+} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import { Link, useNavigate } from "react-router-dom";
-
 const SignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -34,7 +33,6 @@ const SignUp = () => {
       };
       const response = await registerUser(user);
       console.log(response);
-
       navigate("/sign-in");
     } catch (error) {
       if (error instanceof Error) {

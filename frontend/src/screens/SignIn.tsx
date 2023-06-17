@@ -6,7 +6,7 @@ import {
   TextField,
   Button,
   CircularProgress,
-} from "@material-ui/core";
+} from "@mui/material";
 import Alert from "@mui/material/Alert";
 
 const SignIn = () => {

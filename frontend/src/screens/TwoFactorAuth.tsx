@@ -8,8 +8,9 @@ import {
   Button,
   Typography,
   CircularProgress,
-} from "@material-ui/core";
+} from "@mui/material";
 import Alert from "@mui/material/Alert";
+import { useAuth } from "../contexts/AuthContext";
 
 const TwoFactorAuth = () => {
   const [totpToken, setTotpToken] = useState("");
@@ -19,20 +20,16 @@ const TwoFactorAuth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { username, password } = location.state;
-
+  const { logIn } = useAuth();
   const handleTotp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("reached");
 
     try {
       setLoading(true);
-      console.log("loading reached");
       await verifyTotp(username, totpToken);
-      console.log("verify reached");
-
       const tokenData = await loginUser(username, password);
       console.log(tokenData);
-
+      logIn();
       navigate("/dashboard");
     } catch (error) {
       if (error instanceof Error) {
@@ -88,7 +85,9 @@ const TwoFactorAuth = () => {
           label="One-time 2FA Code"
           type="text"
           value={totpToken}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTotpToken(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setTotpToken(e.target.value)
+          }
           required
           fullWidth
           margin="normal"

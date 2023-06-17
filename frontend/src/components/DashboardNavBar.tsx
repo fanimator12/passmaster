@@ -1,6 +1,7 @@
-import { Toolbar, IconButton, Tooltip} from "@material-ui/core";
-import { useNavigate } from "react-router";
 import {
+  Toolbar,
+  IconButton,
+  Tooltip,
   AppBar,
   Box,
   Button,
@@ -9,7 +10,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LogoIcon from "./LogoIcon";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import HelpIcon from "@mui/icons-material/Help";
@@ -23,7 +24,7 @@ const DashboardNavbar = ({ ...props }: DashboardNavBarProps) => {
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
-    logOut;
+    logOut();
     navigate("/home");
   };
 
@@ -39,7 +40,12 @@ const DashboardNavbar = ({ ...props }: DashboardNavBarProps) => {
         <Toolbar>
           <Grid container spacing={1} alignItems="center">
             <Grid sx={{ display: { sm: "none", xs: "block" } }} item>
-              <IconButton color="inherit" onClick={onDrawerToggle} aria-label="open drawer" edge="start">
+              <IconButton
+                color="inherit"
+                onClick={onDrawerToggle}
+                aria-label="open drawer"
+                edge="start"
+              >
                 <LogoIcon />
               </IconButton>
             </Grid>
