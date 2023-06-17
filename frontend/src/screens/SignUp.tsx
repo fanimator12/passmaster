@@ -1,15 +1,23 @@
 import { registerUser } from "../api/api_root";
 import { useState } from "react";
 import "../App.css";
-import { useNavigate } from 'react-router-dom';
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  CircularProgress,
+} from "@material-ui/core";
+import Alert from "@mui/material/Alert";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [fullname, setFullname] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
@@ -27,12 +35,12 @@ const SignUp = () => {
       const response = await registerUser(user);
       console.log(response);
 
-      navigate('/sign-in');
+      navigate("/sign-in");
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('Sign Up failed. Please contact for support.');
+        setError("Sign Up failed. Please contact for support.");
       }
     } finally {
       setLoading(false);
@@ -40,49 +48,75 @@ const SignUp = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Username:
-        <input
+    <Container
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        margin: "auto",
+        display: "flex",
+        justifyContent: "center",
+        textAlign: "center",
+        alignItems: "center",
+      }}
+    >
+      <form onSubmit={handleSubmit}>
+        <Typography variant="h3" gutterBottom>
+          Sign Up
+        </Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <TextField
+          label="Username"
           type="text"
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
         />
-      </label>
-
-      <label>
-        Email:
-        <input
+        <TextField
+          label="Email"
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
         />
-      </label>
-
-      <label>
-        Full Name:
-        <input
+        <TextField
+          label="Full Name"
           type="text"
           value={fullname}
-          onChange={e => setFullname(e.target.value)}
+          onChange={(e) => setFullname(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
         />
-      </label>
-
-      <label>
-        Password:
-        <input
+        <TextField
+          label="Password"
           type="password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
         />
-      </label>
-
-      <button type="submit" disabled={loading}>
-        Sign Up
-      </button>
-
-      {error && <div>Error: {error}</div>}
-    </form>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          disabled={loading}
+        >
+          Sign Up
+        </Button>
+        {loading && <CircularProgress />}
+        <Typography variant="body1" style={{ marginTop: "1em" }}>
+          Already have an account? <Link to="/sign-in">Sign In</Link>
+        </Typography>
+      </form>
+    </Container>
   );
 };
 

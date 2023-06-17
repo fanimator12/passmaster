@@ -1,10 +1,9 @@
-import { lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "../screens/Home";
 import TwoFactorAuth from "../screens/TwoFactorAuth";
-const Dashboard = lazy(() => import("../screens/Dashboard"));
-const SignUp = lazy(() => import("../screens/SignUp"));
-const SignIn = lazy(() => import("../screens/SignIn"));
+import Dashboard from "../screens/Dashboard";
+import SignUp from "../screens/SignUp";
+import SignIn from "../screens/SignIn";
 
 export const MainRouter = () => {
   return (

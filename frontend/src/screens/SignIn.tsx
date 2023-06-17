@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+} from "@material-ui/core";
+import Alert from "@mui/material/Alert";
 
 const SignIn = () => {
   const [username, setUsername] = useState("");
@@ -15,7 +23,7 @@ const SignIn = () => {
     try {
       setLoading(true);
 
-      navigate('/auth', { state: { username, password } });
+      navigate("/auth", { state: { username, password } });
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -28,33 +36,56 @@ const SignIn = () => {
   };
 
   return (
-    <div>
-      <h1>Sign In</h1>
-      {error && <p>{error}</p>}
+    <Container
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        margin: "auto",
+        display: "flex",
+        justifyContent: "center",
+        textAlign: "center",
+        alignItems: "center",
+      }}
+    >
       <form onSubmit={handleLogin}>
-        <label>
-          Username:
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          Password:
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        <br />
-        <input type="submit" value="Sign In" disabled={loading} />
+        <Typography variant="h3" gutterBottom>
+          Sign In
+        </Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <TextField
+          label="Username"
+          value={username}
+          onChange={(e: any) => setUsername(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e: any) => setPassword(e.target.value)}
+          required
+          fullWidth
+          margin="normal"
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          disabled={loading}
+        >
+          Sign In
+        </Button>
+        {loading && <CircularProgress />}
+        <Typography variant="body1" style={{ marginTop: "1em" }}>
+          New here? <Link to="/sign-up">Sign Up</Link>
+        </Typography>
       </form>
-    </div>
+    </Container>
   );
 };
 
