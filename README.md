@@ -39,6 +39,7 @@ In case manual changes were made in SQL: `alembic stamp head`, then do the steps
 4. `kubectl apply -f web-deployment.yaml`
 5. `kubectl apply -f web-service.yaml`
 6. `kubectl apply -f passmaster-pod.yaml`
+7. `kubectl apply -f ingress.yaml`
 
 # Deploy frontend
 The site is deployed on **Vercel**, since it automatically assigns SSL certificates. It is available on **[passmaster.net](https://passmaster.net/)**.
