@@ -1,5 +1,5 @@
 import { useFrame} from "@react-three/fiber";
-import { GLTFLoader, GLTF } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader, GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import { Group, Mesh, TextureLoader } from "three";
 import { useRef, useEffect } from "react";
 
@@ -12,7 +12,6 @@ const Model = () => {
       const textureLoader = new TextureLoader();
       textureLoader.setPath("/models/textures/");
 
-      // Apply textures to the loaded GLTF model
       gltf.scene.traverse((node: any) => {
         if (node instanceof Mesh) {
           const textureName = node.name;
