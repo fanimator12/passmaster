@@ -11,9 +11,8 @@ import {
 import Alert from "@mui/material/Alert";
 import field_style from "../styles/LightTextFieldStyle";
 import SignUp from "./SignUp";
-import { SignUpProps } from "../props";
 
-const SignIn = ({ handleClose }: SignUpProps) => {
+const SignIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -119,7 +118,11 @@ const SignIn = ({ handleClose }: SignUpProps) => {
       </Container>
       <Dialog
         open={openSignUp}
-        onClose={handleClose}
+        onClose={(_event, reason) => {
+          if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+            handleCloseSignUp();
+          }
+        }}
         aria-labelledby="sign-up-modal-title"
         aria-describedby="sign-up-modal-description"
       >

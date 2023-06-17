@@ -7,13 +7,11 @@ import {
   Container,
   Typography,
   CircularProgress,
-  Dialog,
 } from "@mui/material";
 import Alert from "@mui/material/Alert";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import field_style from "../styles/LightTextFieldStyle";
 import { SignUpProps } from "../props";
-import SignIn from "./SignIn";
 const SignUp = ({ handleClose }: SignUpProps) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -21,17 +19,7 @@ const SignUp = ({ handleClose }: SignUpProps) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [openSignIn, setOpenSignIn] = useState(false);
   const navigate = useNavigate();
-
-  const handleOpenSignIn = () => {
-    setOpenSignIn(true);
-  };
-
-  const handleCloseSignIn = () => {
-    setOpenSignIn(false);
-  };
-
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -149,20 +137,12 @@ const SignUp = ({ handleClose }: SignUpProps) => {
             style={{ marginTop: "1em" }}
           >
             Already have an account?{" "}
-            <Button onClick={handleOpenSignIn} style={{ color: "#fff" }}>
+            <Link to="/sign-in" style={{ color: "#fff" }}>
               Sign In
-            </Button >
+            </Link>
           </Typography>
         </form>
       </Container>
-      <Dialog
-        open={openSignIn}
-        onClose={handleCloseSignIn}
-        aria-labelledby="sign-in-modal-title"
-        aria-describedby="sign-in-modal-description"
-      >
-        <SignIn handleClose={handleCloseSignIn} />
-      </Dialog>
     </div>
   );
 };

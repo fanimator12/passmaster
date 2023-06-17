@@ -28,7 +28,7 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
   const handleCloseSignIn = () => {
     setOpenSignIn(false);
   };
-  
+
   return (
     <AppBar
       position="fixed"
@@ -94,7 +94,8 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
             </Grid>
 
             <Grid item>
-              <Box component="div"
+              <Box
+                component="div"
                 sx={{
                   display: { xs: "none", sm: "none", md: "flex" },
                   marginLeft: "10px",
@@ -118,17 +119,28 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
                       backgroundColor: "transparent",
                     },
                   }}
+                >
+                  <NavLink key={0} title="Home" url="/" />
+                </Button>
+
+                <Button
+                  sx={{
+                    transition: "none",
+                    color: "transparent",
+                    "& .MuiTypography-root": {
+                      textTransform: "uppercase",
+                      fontFamily: "Oswald Regular",
+                    },
+                    "& .MuiListItemButton-root:hover": {
+                      backgroundColor: "transparent",
+                    },
+                    "&:hover": {
+                      backgroundColor: "transparent",
+                    },
+                  }}
                   onClick={handleOpenSignIn}
                 >
-                  {headerLinks.map(
-                    (section: { title: string; url: string }) => (
-                      <NavLink
-                        key={section.title}
-                        title={section.title}
-                        url={undefined}
-                      />
-                    )
-                  )}
+                  <NavLink key={1} title="Sign In" url={undefined} />
                 </Button>
               </Box>
             </Grid>
