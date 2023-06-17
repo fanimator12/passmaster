@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import { useAuth } from "../contexts/AuthContext";
+import field_style from "../styles/LightTextFieldStyle";
 
 const TwoFactorAuth = () => {
   const [totpToken, setTotpToken] = useState("");
@@ -52,21 +53,9 @@ const TwoFactorAuth = () => {
   }, [username]);
 
   return (
-    <Container
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        margin: "auto",
-        display: "flex",
-        justifyContent: "center",
-        textAlign: "center",
-        alignItems: "center",
-      }}
-    >
-      <form onSubmit={handleTotp}>
+    <div className="fullscreen-container">
+      <Container className="form-container" maxWidth="sm">
+      <form className="form" onSubmit={handleTotp}>
         {error && <Alert severity="error">{error}</Alert>}
         {qrCode && <QRCodeSVG value={qrCode} />}
         <Typography variant="h6" gutterBottom>
@@ -80,6 +69,7 @@ const TwoFactorAuth = () => {
           required
           fullWidth
           margin="normal"
+          sx={field_style}
         />
         <TextField
           label="One-time 2FA Code"
@@ -91,8 +81,10 @@ const TwoFactorAuth = () => {
           required
           fullWidth
           margin="normal"
+          sx={field_style}
         />
         <Button
+        className="button"
           variant="contained"
           color="primary"
           type="submit"
@@ -103,6 +95,7 @@ const TwoFactorAuth = () => {
         {loading && <CircularProgress />}
       </form>
     </Container>
+    </div>
   );
 };
 

@@ -14,6 +14,13 @@ const field_style = {
   "& .MuiInputBase-root": {
     color: "#fff",
   },
+  " .Mui-disabled": {
+    color: "#fff",
+  },
+  "&:disabled": {
+    color: "#fff",
+    borderColor: "#fff",
+  },
 };
 
 export default field_style;
