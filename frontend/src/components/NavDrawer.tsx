@@ -31,7 +31,8 @@ const NavDrawer = ({ handleDrawerToggle, mobileOpen }: HeaderProps) => {
         },
       }}
     >
-      <Box
+      <Box 
+      component="div"
         sx={{
           textAlign: "center",
           display: "flex",

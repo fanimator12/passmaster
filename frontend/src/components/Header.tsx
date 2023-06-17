@@ -55,7 +55,7 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
 
           <Grid container justifyContent="flex-end" sx={{ marginTop: "-70px" }}>
             <Grid item>
-              <Box>
+              <Box component="div">
                 <IconButton
                   color="inherit"
                   aria-label="open drawer"
@@ -80,7 +80,7 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
             </Grid>
 
             <Grid item>
-              <Box
+              <Box component="div"
                 sx={{
                   display: { xs: "none", sm: "none", md: "flex" },
                   marginLeft: "10px",

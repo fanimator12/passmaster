@@ -1,22 +1,6 @@
-import facebook from "../assets/facebook.svg";
-import instagram from "../assets/instagram.svg";
-import linkedin from "../assets/linkedin.svg";
-
 export const headerLinks = [
   {
     title: "Home",
-    url: "/",
-  },
-  {
-    title: "Product",
-    url: "/",
-  },
-  {
-    title: "Support",
-    url: "/",
-  },
-  {
-    title: "Pricing",
     url: "/",
   },
   {

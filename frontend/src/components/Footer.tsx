@@ -2,7 +2,7 @@ import Copyright from "./Copyright";
 import "../App.css";
 import Logo from "./Logo";
 import { Box, Container, Typography, Grid } from "@mui/material";
-import { footerLinks, socialMedia } from "../constants";
+import { footerLinks } from "../constants";
 import NavLink from "./NavLink";
 
 export default function Footer() {
