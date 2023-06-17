@@ -58,7 +58,7 @@ const SignIn = () => {
         <TextField
           label="Username"
           value={username}
-          onChange={(e: any) => setUsername(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
           required
           fullWidth
           margin="normal"
@@ -67,7 +67,7 @@ const SignIn = () => {
           label="Password"
           type="password"
           value={password}
-          onChange={(e: any) => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           required
           fullWidth
           margin="normal"
