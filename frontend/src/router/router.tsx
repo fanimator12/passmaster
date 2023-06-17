@@ -1,20 +1,26 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Home from "../screens/Home";
 import TwoFactorAuth from "../screens/TwoFactorAuth";
 import Dashboard from "../screens/Dashboard";
 import SignUp from "../screens/SignUp";
 import SignIn from "../screens/SignIn";
+import { useAuth } from "../contexts/AuthContext";
 
 export const MainRouter = () => {
+  const { isAuthenticated } = useAuth();
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/auth" element={<TwoFactorAuth />} />
-
+        <Route
+          path="/dashboard"
+          element={
+            isAuthenticated ? <Dashboard /> : <Navigate to="/sign-in" replace />
+          }
+        />
         <Route
           path="*"
           element={
@@ -43,11 +49,22 @@ export const MainRouter = () => {
 };
 
 export const DashboardRouter = () => {
+  const { isAuthenticated } = useAuth();
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? <Home /> : <Navigate to="/sign-in" replace />
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            isAuthenticated ? <Dashboard /> : <Navigate to="/sign-in" replace />
+          }
+        />
         <Route
           path="*"
           element={
@@ -74,4 +91,3 @@ export const DashboardRouter = () => {
     </BrowserRouter>
   );
 };
-

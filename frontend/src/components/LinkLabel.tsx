@@ -1,15 +1,22 @@
 import { Link, Typography } from "@mui/material";
 
 export interface LinkLabelProps {
-  label: string | any;
+  label: string;
   link: string;
   title: string;
-  extraLabel?: string | any;
+  extraLabel?: string;
   extraLink?: string;
   extraTitle?: string;
 }
 
-const LinkLabel = ({ label, link, title, extraLabel, extraLink, extraTitle}: LinkLabelProps) => {
+const LinkLabel = ({
+  label,
+  link,
+  title,
+  extraLabel,
+  extraLink,
+  extraTitle,
+}: LinkLabelProps) => {
   return (
     <Typography color="#fff" sx={{ textTransform: "none" }}>
       {label}{" "}

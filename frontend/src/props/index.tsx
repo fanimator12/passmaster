@@ -40,6 +40,6 @@ export interface CheckboxLabelProps {
   handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export interface DashboardHeaderProps {
+export interface DashboardNavBarProps {
   onDrawerToggle: () => void;
 }

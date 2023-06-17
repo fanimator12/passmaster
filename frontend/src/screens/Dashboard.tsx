@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import Navigator from "../components/SideBar";
 import ItemContent from "../components/ItemContent";
-import Header from "../components/DashboardHeader";
+import Header from "../components/DashboardNavBar";
 import Copyright from "../components/Copyright";
 import theme from "../theme/theme";
 
@@ -40,7 +40,8 @@ export default function Dashboard() {
             sx={{ display: { sm: "block", xs: "none" } }}
           />
         </Box>
-        <Box component="div"
+        <Box
+          component="div"
           sx={{
             flex: 1,
             display: "flex",
