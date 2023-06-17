@@ -1,4 +1,4 @@
-import { Toolbar, IconButton, Tooltip, Avatar } from "@material-ui/core";
+import { Toolbar, IconButton, Tooltip} from "@material-ui/core";
 import { useNavigate } from "react-router";
 import {
   AppBar,
@@ -39,7 +39,7 @@ const DashboardNavbar = ({ ...props }: DashboardNavBarProps) => {
         <Toolbar>
           <Grid container spacing={1} alignItems="center">
             <Grid sx={{ display: { sm: "none", xs: "block" } }} item>
-              <IconButton color="inherit" aria-label="open drawer" edge="start">
+              <IconButton color="inherit" onClick={onDrawerToggle} aria-label="open drawer" edge="start">
                 <LogoIcon />
               </IconButton>
             </Grid>

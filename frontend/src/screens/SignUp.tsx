@@ -71,7 +71,7 @@ const SignUp = () => {
           label="Username"
           type="text"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
           required
           fullWidth
           margin="normal"
@@ -80,7 +80,7 @@ const SignUp = () => {
           label="Email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           required
           fullWidth
           margin="normal"
@@ -89,7 +89,7 @@ const SignUp = () => {
           label="Full Name"
           type="text"
           value={fullname}
-          onChange={(e) => setFullname(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullname(e.target.value)}
           required
           fullWidth
           margin="normal"
@@ -98,7 +98,7 @@ const SignUp = () => {
           label="Password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           required
           fullWidth
           margin="normal"

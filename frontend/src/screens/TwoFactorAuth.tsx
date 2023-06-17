@@ -88,7 +88,7 @@ const TwoFactorAuth = () => {
           label="One-time 2FA Code"
           type="text"
           value={totpToken}
-          onChange={(e) => setTotpToken(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTotpToken(e.target.value)}
           required
           fullWidth
           margin="normal"
