@@ -7,14 +7,28 @@ import {
   Button,
   IconButton,
   Box,
+  Modal,
+  Dialog,
 } from "@mui/material";
 import NavDrawer from "./NavDrawer";
 import NavLink from "./NavLink";
 import { headerLinks } from "../constants";
 import { HeaderProps } from "../props";
 import Logo from "./Logo";
+import { useState } from "react";
+import SignIn from "../screens/SignIn";
 
 function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
+  const [openSignIn, setOpenSignIn] = useState(false);
+
+  const handleOpenSignIn = () => {
+    setOpenSignIn(true);
+  };
+
+  const handleCloseSignIn = () => {
+    setOpenSignIn(false);
+  };
+  
   return (
     <AppBar
       position="fixed"
@@ -104,13 +118,14 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
                       backgroundColor: "transparent",
                     },
                   }}
+                  onClick={handleOpenSignIn}
                 >
                   {headerLinks.map(
                     (section: { title: string; url: string }) => (
                       <NavLink
                         key={section.title}
                         title={section.title}
-                        url={section.url}
+                        url={undefined}
                       />
                     )
                   )}
@@ -120,6 +135,14 @@ function Header({ handleDrawerToggle, mobileOpen }: HeaderProps) {
           </Grid>
         </Grid>
       </Toolbar>
+      <Dialog
+        open={openSignIn}
+        onClose={handleCloseSignIn}
+        aria-labelledby="sign-in-modal-title"
+        aria-describedby="sign-in-modal-description"
+      >
+        <SignIn />
+      </Dialog>
     </AppBar>
   );
 }

@@ -9,10 +9,7 @@ body {
 #root {
   width: 100%;
   height: 100%;
-}
-
-canvas {
-  background: #000000;
+  background: #000;
 }
 
 .fullscreen-container {
@@ -23,34 +20,6 @@ canvas {
   bottom: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgb(0, 72, 189) 0%, hsla(157, 100%, 50%, 1) 100%);
-}
-
-.fullscreen-container-in {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, hsla(217, 100%, 37%, 1) 0%, hsla(157, 100%, 50%, 1) 100%);
-}
-
-.sign-window {
-  padding: 4em;
-  max-width: 45em;
-  background: linear-gradient(140deg, hsla(157, 100%, 50%, 1) 0%, rgb(0, 48, 126) 100%);
-  box-shadow: 0px 10px 30px 6px rgba(0, 0, 0, 0.25);
-  border-radius: 25px;
-}
-
-.sign-title {
-  padding: 30px;
-}
-
-.sign-grid {
-  padding: 8px;
 }
 
 .backgroundVideo {
@@ -84,10 +53,66 @@ canvas {
   left: 0;
   background-color: #fff;
   transform-origin: bottom right;
-  transition: transform 0.5s ease-out;
+  transition: transform 0.3s ease-out;
 }
 
 .hover-underline-animation:hover:after {
   transform: scaleX(1);
   transform-origin: bottom left;
+}
+
+.form-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60%;
+  bottom: 0;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.form {
+  display: flex;
+  padding: 20px;
+  border-radius: 4px;
+  color: #fff;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0);
+  border-radius: 25px;
+  transition: .5s ease-in-out;
+  backdrop-filter: blur(10px);
+}
+
+.form:hover {
+  transform: scale(1.05);
+}
+
+.title {
+  margin-bottom: 20px;
+}
+
+.alert {
+  margin-bottom: 20px;
+}
+
+.input {
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.button {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, rgb(0, 72, 189) 0%, hsla(157, 100%, 50%, 1) 100%);
+}
+
+.progress {
+  margin-bottom: 10px;
+}
+
+.sign-link {
+  margin-top: 10px;
 }

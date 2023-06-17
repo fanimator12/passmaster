@@ -7,10 +7,17 @@ export interface AppHeaderProps {
   }>;
   title: string;
 }
+export interface SignInProps {
+  handleClose: () => void;
+}
+
+export interface SignUpProps {
+  handleClose: () => void;
+}
 
 export interface NavLinkProps {
   title: string;
-  url: string;
+  url: string | undefined;
 }
 
 export interface HeaderProps {

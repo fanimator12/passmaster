@@ -9,6 +9,7 @@ import { AppHeaderProps } from '../props';
 
 export default function HomeHeader(props: AppHeaderProps) {
   const { sections, title } = props;
+  
 
   return (
     <React.Fragment>
