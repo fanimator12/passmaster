@@ -47,7 +47,7 @@ export default function ItemContent() {
   const [showNotification, setShowNotification] = useState(false);
   const [passwords, setPasswords] = useState<Password[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Password[]>([]);
-  const [editPasswordData, setEditPasswordData] = useState<Password | null>(null);
+  const [editPasswordData] = useState<Password | null>(null);
   const { token } = useAuth();
 
   const handleRevealPassword = async (
