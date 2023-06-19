@@ -371,6 +371,9 @@ async def update_password(
     
     key = Fernet.generate_key()
     new_key = Key(aes_key=key.decode(), user_id=current_user.id)
+    db.add(new_key)
+    db.commit()
+    db.refresh(new_key)
 
     if password_data.website is not None:
         passmaster_record.website = password_data.website
@@ -381,6 +384,7 @@ async def update_password(
     if password_data.username is not None:
         passmaster_record.username = password_data.username
 
+    passmaster_record.key_id = new_key.id
     passmaster_record.encrypt_password(password_data.password, new_key.aes_key)
 
     db.add(passmaster_record)
