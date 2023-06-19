@@ -19,9 +19,11 @@ from pyotp import TOTP, random_base32
 r = redis.Redis(host="passmaster-redis", port=6379, db=0)
 router = APIRouter()
 
+
 @router.get("/")
 def health_check():
     return {"status": "UP"}
+
 
 def get_db():
     db = SessionLocal()
@@ -366,6 +368,12 @@ async def update_password(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Password record is corrupted: missing key",
         )
+    
+    if password_data.password is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid password",
+    )
 
     key = Fernet.generate_key()
     new_key = Key(aes_key=key.decode(), user_id=current_user.id)

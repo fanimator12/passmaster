@@ -7,7 +7,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import HomeIcon from '@mui/icons-material/Home';
-import DeleteIcon from '@mui/icons-material/Delete';
 import AllInboxIcon from '@mui/icons-material/AllInbox';
 import PortraitIcon from '@mui/icons-material/Portrait';
 import GradeIcon from '@mui/icons-material/Grade';
@@ -18,7 +17,7 @@ const categories = [
     id: 'General',
     children: [
       {
-        id: 'All Items',
+        id: 'All Passwords',
         icon: <AllInboxIcon />,
         active: true,
       },

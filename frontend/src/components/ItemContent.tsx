@@ -10,7 +10,13 @@ import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useEffect, useState } from "react";
-import { updatePassword, deletePassword, getAllPasswords, getPassword, savePassword } from "../api/api_root";
+import {
+  updatePassword,
+  deletePassword,
+  getAllPasswords,
+  getPassword,
+  savePassword,
+} from "../api/api_root";
 import {
   Modal,
   Box,
@@ -47,8 +53,38 @@ export default function ItemContent() {
   const [showNotification, setShowNotification] = useState(false);
   const [passwords, setPasswords] = useState<Password[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Password[]>([]);
-  const [editPasswordData] = useState<Password | null>(null);
+  const [editPasswordData, setEditPasswordData] = useState<Password | null>(
+    null
+  );
+  const [editMode, setEditMode] = useState(false);
   const { token } = useAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>();
+
+  const handleOpen = (isEditMode = false, password: Password | null = null) => {
+    setEditMode(isEditMode);
+    setEditPasswordData(password);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleNotificationClose = () => {
+    setShowNotification(false);
+  };
+
+  const handleAddPassword = () => {
+    setEditMode(false);
+    setEditPasswordData(null);
+    setOpen(true);
+  };
 
   const handleRevealPassword = async (
     passmaster_id: string,
@@ -79,38 +115,33 @@ export default function ItemContent() {
     }
   };
 
-  const handleUpdatePassword = async (passmaster_id: string, token: string | null) => {
-    try {
-      if (!token) {
-        throw new Error("Token is null");
-      }
-      const passwordData = await getPassword(passmaster_id, token);
-  
-      const updatedPasswordData = {
-        id: passmaster_id,
-        website: passwordData.website,
-        email: passwordData.email,
-        username: passwordData.username,
-        password: passwordData.password,
-      };
-  
-      await updatePassword(passmaster_id, updatedPasswordData, token);
-      console.log('Password updated successfully!');
-    } catch (error) {
-      console.error('Error while updating password', error);
+  const handleUpdatePassword = (passmaster_id: string) => {
+    const passwordToUpdate = passwords.find(
+      (password) => password.id === passmaster_id
+    );
+    if (passwordToUpdate) {
+      handleOpen(true, passwordToUpdate);
+      setEditPasswordData(passwordToUpdate);
+      setEditMode(true);
+      reset(passwordToUpdate);
+      setOpen(true);
+    } else {
+      console.error(`Password with ID ${passmaster_id} not found.`);
     }
-  };  
-  
-  
-  const handleDeletePassword = async (passmaster_id: string, token: string | null) => {
+  };
+
+  const handleDeletePassword = async (
+    passmaster_id: string,
+    token: string | null
+  ) => {
     try {
       if (!token) {
         throw new Error("Token is null");
       }
       await deletePassword(passmaster_id, token);
-      console.log('Password deleted successfully!');
+      console.log("Password deleted successfully!");
     } catch (error) {
-      console.error('Error while deleting password', error);
+      console.error("Error while deleting password", error);
     }
   };
 
@@ -119,42 +150,23 @@ export default function ItemContent() {
       if (token) {
         const passwords = await getAllPasswords(token);
         setPasswords(passwords);
-        console.log('Passwords refreshed successfully!');
+        console.log("Passwords refreshed successfully!");
       }
     } catch (error) {
-      console.error('Error while refreshing passwords', error);
+      console.error("Error while refreshing passwords", error);
     }
   };
 
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>();
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleNotificationClose = () => {
-    setShowNotification(false);
-  };
-
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    console.log('OnSubmit triggered with data: ', data);
+    console.log("OnSubmit triggered with data: ", data);
     setOpen(false);
-    
+
     if (token) {
       console.log(data);
       console.log(token);
-      
+
       try {
-        if (editPasswordData) {
+        if (editMode && editPasswordData) {
           const updatedPasswordData = {
             ...editPasswordData,
             website: data.website,
@@ -162,17 +174,18 @@ export default function ItemContent() {
             username: data.username,
           };
           await updatePassword(editPasswordData.id, updatedPasswordData, token);
-          
-          console.log('Password updated successfully!');
+
+          console.log("Password updated successfully!");
         } else {
           await savePassword(data, token);
-          
-          console.log('Password submitted successfully!');
+
+          console.log("Password submitted successfully!");
         }
-        
+
         setShowNotification(true);
+        setEditPasswordData(null);
       } catch (error) {
-        console.error('Error while saving/updating password', error);
+        console.error("Error while saving/updating password", error);
       }
     }
   };
@@ -228,7 +241,7 @@ export default function ItemContent() {
               <Grid item>
                 <Button
                   variant="contained"
-                  onClick={handleOpen}
+                  onClick={handleAddPassword}
                   sx={{
                     mr: 1,
                     background:
@@ -306,12 +319,18 @@ export default function ItemContent() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <IconButton sx={{ color: "#fff" }} onClick={() => handleUpdatePassword(password.id, token)}>
+                      <IconButton
+                        sx={{ color: "#fff" }}
+                        onClick={() => handleUpdatePassword(password.id)}
+                      >
                         <UpdateIcon />
                       </IconButton>
                     </TableCell>
                     <TableCell>
-                      <IconButton sx={{ color: "rgb(0, 72, 189)" }} onClick={() => handleDeletePassword(password.id, token)}>
+                      <IconButton
+                        sx={{ color: "rgb(0, 72, 189)" }}
+                        onClick={() => handleDeletePassword(password.id, token)}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>
@@ -331,52 +350,70 @@ export default function ItemContent() {
           onClose={handleClose}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <Box
             component="div"
             sx={{
               width: 400,
               bgcolor: "background.paper",
-              p: 2,
+              p: 5,
               mx: "auto",
               my: "auto",
               borderRadius: "5px",
             }}
           >
             <Typography id="modal-modal-title" variant="h6" component="h2">
-            {editPasswordData ? 'Update Password' : 'Add Password'}
+              {editPasswordData ? "Update Password" : "Add Password"}
             </Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
               <TextField
                 fullWidth
                 label="Website"
-                {...register("website", { required: true })}
+                {...register("website")}
                 defaultValue={editPasswordData?.website || ""}
+                sx={{ mt: 2 }}
               />
-              {errors.website && <span>This field is required</span>}
+              {errors.website?.message && <span>{errors.website.message}</span>}
               <TextField
                 fullWidth
                 label="Email"
-                {...register("email", { required: true })}
+                {...register("email")}
                 defaultValue={editPasswordData?.email || ""}
+                sx={{ mt: 2 }}
               />
-              {errors.email && <span>This field is required</span>}
+              {errors.email?.message && <span>{errors.email.message}</span>}
               <TextField
                 fullWidth
                 label="Username"
-                {...register("username", { required: true })}
+                {...register("username")}
                 defaultValue={editPasswordData?.username || ""}
+                sx={{ mt: 2 }}
               />
-              {errors.username && <span>This field is required</span>}
+              {errors.username?.message && (
+                <span>{errors.username.message}</span>
+              )}
               <TextField
                 fullWidth
                 label="Password"
                 type="password"
-                {...register("password", { required: true })}
+                {...register("password")}
                 defaultValue={editPasswordData?.password || ""}
+                sx={{ mt: 2 }}
               />
-              {errors.password && <span>This field is required</span>}
-              <Button type="submit" variant="contained" color="primary">
+              {errors.password?.message && (
+                <span>{errors.password.message}</span>
+              )}
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2 }}
+              >
                 Submit
               </Button>
             </form>
