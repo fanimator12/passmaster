@@ -369,12 +369,6 @@ async def update_password(
             detail="Password record is corrupted: missing key",
         )
     
-    if password_data.password is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid password",
-    )
-
     key = Fernet.generate_key()
     new_key = Key(aes_key=key.decode(), user_id=current_user.id)
 

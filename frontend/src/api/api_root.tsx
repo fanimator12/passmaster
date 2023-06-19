@@ -88,10 +88,10 @@ export const getPassword = async (passmaster_id: string, token: string) => {
 export const updatePassword = async (
   passmaster_id: string,
   password_data: {
-    website: string;
-    email: string;
-    username: string;
-    password: string;
+    website?: string;
+    email?: string;
+    username?: string;
+    password?: string;
   },
   token: string
 ) => {
@@ -104,8 +104,17 @@ export const updatePassword = async (
       }
     );
     return response.data;
-  } catch (error) {
-    console.error("Error while updating password", error);
+  } catch (error: any) {
+    if (error.response) {
+      console.error('Error data', error.response.data);
+      console.error('Error status', error.response.status);
+      console.error('Error headers', error.response.headers);
+    } else if (error.request) {
+      console.error('No response received', error.request);
+    } else {
+      console.error('Error', error.message);
+    }
+    console.error('Error config', error.config);
   }
 };
 

@@ -34,10 +34,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import UpdateIcon from "@mui/icons-material/Update";
 
 interface FormData {
-  website: string;
-  email: string;
-  username: string;
-  password: string;
+  website?: string;
+  email?: string;
+  username?: string;
+  password?: string;
 }
 
 interface Password {
@@ -167,17 +167,34 @@ export default function ItemContent() {
 
       try {
         if (editMode && editPasswordData) {
-          const updatedPasswordData = {
-            ...editPasswordData,
-            website: data.website,
-            email: data.email,
-            username: data.username,
-          };
+          const updatedPasswordData: {
+            website?: string;
+            email?: string;
+            username?: string;
+            password?: string;
+          } = {};
+
+          if (data.website) updatedPasswordData.website = data.website;
+          if (data.email) updatedPasswordData.email = data.email;
+          if (data.username) updatedPasswordData.username = data.username;
+          if (data.password) updatedPasswordData.password = data.password;
           await updatePassword(editPasswordData.id, updatedPasswordData, token);
 
           console.log("Password updated successfully!");
         } else {
-          await savePassword(data, token);
+          const savePasswordData: {
+            website: string;
+            email: string;
+            username: string;
+            password: string;
+          } = {
+            website: data.website || "",
+            email: data.email || "",
+            username: data.username || "",
+            password: data.password || "",
+          };
+
+          await savePassword(savePasswordData, token);
 
           console.log("Password submitted successfully!");
         }
@@ -423,7 +440,7 @@ export default function ItemContent() {
           open={showNotification}
           autoHideDuration={3000}
           onClose={handleNotificationClose}
-          message="Password submitted successfully!"
+          message="Password record submitted successfully!"
         />
       </Paper>
     </>
