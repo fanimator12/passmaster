@@ -23,7 +23,6 @@ const categories = [
         active: true,
       },
       { id: 'Favorites', icon: <GradeIcon /> },
-      { id: 'Bin', icon: <DeleteIcon/> },
     ],
   },
   {
