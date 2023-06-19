@@ -53,9 +53,7 @@ export default function ItemContent() {
   const [showNotification, setShowNotification] = useState(false);
   const [passwords, setPasswords] = useState<Password[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Password[]>([]);
-  const [editPasswordData, setEditPasswordData] = useState<Password | null>(
-    null
-  );
+  const [editPasswordData, setEditPasswordData] = useState<Password | null>();
   const [editMode, setEditMode] = useState(false);
   const { token } = useAuth();
 
@@ -139,7 +137,7 @@ export default function ItemContent() {
         throw new Error("Token is null");
       }
       await deletePassword(passmaster_id, token);
-      console.log("Password deleted successfully!");
+      console.log("Password record deleted successfully!");
     } catch (error) {
       console.error("Error while deleting password", error);
     }
