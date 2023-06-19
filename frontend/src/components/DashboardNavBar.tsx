@@ -25,7 +25,7 @@ const DashboardNavbar = ({ ...props }: DashboardNavBarProps) => {
   const handleSignOut = () => {
     localStorage.removeItem("token");
     logOut();
-    navigate("/home");
+    navigate("/");
   };
 
   const background = "";
