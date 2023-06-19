@@ -30,7 +30,7 @@ const TwoFactorAuth = () => {
       await verifyTotp(username, totpToken);
       const tokenData = await loginUser(username, password);
       console.log(tokenData);
-      logIn();
+      logIn(tokenData);
       navigate("/dashboard");
     } catch (error) {
       if (error instanceof Error) {

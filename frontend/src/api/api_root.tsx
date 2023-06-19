@@ -33,7 +33,7 @@ export const loginUser = async (username: string, password: string) => {
       password: password,
       scope: "",
       client_id: "",
-      client_secret: ""
+      client_secret: "",
     }).toString(),
     {
       headers: {
@@ -41,7 +41,8 @@ export const loginUser = async (username: string, password: string) => {
       },
     }
   );
-  return response.data;
+  
+  return response.data.access_token;
 };
 
 export const getUser = async (token: string) => {
@@ -67,10 +68,14 @@ export const savePassword = async (
   },
   token: string
 ) => {
-  const response = await api.post("/save_password", password_data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return response.data;
+  try {
+    const response = await api.post("/save_password", password_data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error during API call", error);
+  }
 };
 
 export const getPassword = async (passmaster_id: string, token: string) => {
