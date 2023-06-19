@@ -55,46 +55,53 @@ const TwoFactorAuth = () => {
   return (
     <div className="fullscreen-container">
       <Container className="form-container" maxWidth="sm">
-      <form className="form" onSubmit={handleTotp}>
-        {error && <Alert severity="error">{error}</Alert>}
-        {qrCode && <QRCodeSVG className="qrcode" color={"#fff"} value={qrCode} />}
-        <Typography variant="h6" gutterBottom>
-          Download Authenticator app for Android or iOS
-        </Typography>
-        <TextField
-          label="Username"
-          type="text"
-          value={username}
-          disabled
-          required
-          fullWidth
-          margin="normal"
-          sx={field_style}
-        />
-        <TextField
-          label="One-time 2FA Code"
-          type="text"
-          value={totpToken}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setTotpToken(e.target.value)
-          }
-          required
-          fullWidth
-          margin="normal"
-          sx={field_style}
-        />
-        <Button
-        className="button"
-          variant="contained"
-          color="primary"
-          type="submit"
-          disabled={loading}
-        >
-          Verify
-        </Button>
-        {loading && <CircularProgress />}
-      </form>
-    </Container>
+        <form className="form" onSubmit={handleTotp}>
+          {error && <Alert severity="error">{error}</Alert>}
+          <div className="qrcode">{qrCode && <QRCodeSVG value={qrCode} />}</div>
+          <Typography variant="h6" gutterBottom>
+            Download Authenticator app for Android or iOS
+          </Typography>
+          <TextField
+            label="Username"
+            type="text"
+            value={username}
+            disabled
+            required
+            fullWidth
+            margin="normal"
+            sx={field_style}
+          />
+          <TextField
+            label="One-time 2FA Code"
+            type="text"
+            value={totpToken}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setTotpToken(e.target.value)
+            }
+            required
+            fullWidth
+            margin="normal"
+            sx={field_style}
+          />
+          <Button
+            className="button"
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={loading}
+          >
+            Verify
+          </Button>
+          {loading && (
+            <CircularProgress
+              style={{
+                margin: "auto",
+                color: "#fff",
+              }}
+            />
+          )}
+        </form>
+      </Container>
     </div>
   );
 };

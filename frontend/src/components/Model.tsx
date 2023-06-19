@@ -4,9 +4,8 @@ import { Group, Mesh, TextureLoader } from "three";
 import { useRef, useEffect } from "react";
 
 const Model = () => {
-  const gltfLoader = new GLTFLoader();
+  const gltfLoader = useRef(new GLTFLoader()).current;
   const gltfRef = useRef<Group | null>(null);
-
   useEffect(() => {
     gltfLoader.load("/models/scene.gltf", (gltf: GLTF) => {
       const textureLoader = new TextureLoader();
@@ -45,9 +44,7 @@ const Model = () => {
   });
 
   return (
-    <group ref={gltfRef}>
-      
-    </group>
+     <group ref={gltfRef} />
   );
 };
 
