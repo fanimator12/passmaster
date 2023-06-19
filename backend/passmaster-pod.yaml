@@ -7,6 +7,13 @@ spec:
     - name: passmaster-image
       image: gcr.io/passmaster-389912/passmaster-image:latest
       imagePullPolicy: Always
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "200Mi"
+        limits:
+          cpu: "500m"
+          memory: "500Mi"
       livenessProbe:
         httpGet:
           path: /
@@ -15,3 +22,9 @@ spec:
         timeoutSeconds: 1
         periodSeconds: 10
         failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /
+          port: 8000
+        initialDelaySeconds: 5
+        periodSeconds: 10

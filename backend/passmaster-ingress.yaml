@@ -4,11 +4,10 @@ metadata:
   name: passmaster-ingress
   annotations:
     kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.global-static-ip-name: "passmaster-lb-static-ipv4"
-    networking.gke.io/managed-certificates: "passmaster-api-cert"
+    networking.gke.io/managed-certificates: passmaster-tls
 spec:
   rules:
-  - host: "passmaster-api.net"
+  - host: passmaster-api.net
     http:
       paths:
       - pathType: Prefix

@@ -57,7 +57,7 @@ const TwoFactorAuth = () => {
       <Container className="form-container" maxWidth="sm">
       <form className="form" onSubmit={handleTotp}>
         {error && <Alert severity="error">{error}</Alert>}
-        {qrCode && <QRCodeSVG value={qrCode} />}
+        {qrCode && <QRCodeSVG className="qrcode" color={"#fff"} value={qrCode} />}
         <Typography variant="h6" gutterBottom>
           Download Authenticator app for Android or iOS
         </Typography>

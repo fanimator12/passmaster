@@ -22,6 +22,11 @@ body {
   height: 100%;
 }
 
+.qrcode {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .backgroundVideo {
   position: absolute;
   display: flex;

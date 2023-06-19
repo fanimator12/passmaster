@@ -13,7 +13,7 @@ Install [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html).
 6. `uvicorn main:app --reload`
 
 Check the API locally on localhost:8000/docs.
-Otherwise, the FastAPI is deployed on Google Kubernetes Engine (GKE) and can be accessed through this **[link](http://34.88.11.138:8000/docs)**.
+Otherwise, the FastAPI is deployed on Google Kubernetes Engine (GKE) and can be accessed through this **[link](http://35.228.112.224:8000/docs)**.
 
 # Run frontend
 1. `cd frontend`
@@ -39,7 +39,8 @@ In case manual changes were made in SQL: `alembic stamp head`, then do the steps
 4. `kubectl apply -f web-deployment.yaml`
 5. `kubectl apply -f web-service.yaml`
 6. `kubectl apply -f passmaster-pod.yaml`
-7. `kubectl apply -f ingress.yaml`
+7. `kubectl apply -f managedcert.yaml`
+8. `kubectl apply -f passmaster-ingress.yaml`
 
 # Deploy frontend
 The site is deployed on **Vercel**, since it automatically assigns SSL certificates. It is available on **[passmaster.net](https://passmaster.net/)**.

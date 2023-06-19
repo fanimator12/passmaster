@@ -19,6 +19,9 @@ from pyotp import TOTP, random_base32
 r = redis.Redis(host="passmaster-redis", port=6379, db=0)
 router = APIRouter()
 
+@router.get("/")
+def health_check():
+    return {"status": "UP"}
 
 def get_db():
     db = SessionLocal()

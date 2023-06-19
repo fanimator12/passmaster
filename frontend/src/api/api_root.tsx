@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "https://34.88.11.138:8000/passmaster" });
+const api = axios.create({ baseURL: "http://localhost:8000/passmaster" });
 
 export const registerUser = async (user: {
   username: string;
