@@ -41,7 +41,7 @@ export const loginUser = async (username: string, password: string) => {
       },
     }
   );
-  
+
   return response.data.access_token;
 };
 
@@ -95,14 +95,18 @@ export const updatePassword = async (
   },
   token: string
 ) => {
-  const response = await api.put(
-    `/update_password/${passmaster_id}`,
-    password_data,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return response.data;
+  try {
+    const response = await api.put(
+      `/update_password/${passmaster_id}`,
+      password_data,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error while updating password", error);
+  }
 };
 
 export const deletePassword = async (passmaster_id: string, token: string) => {

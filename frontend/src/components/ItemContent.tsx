@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useEffect, useState } from "react";
-import { getAllPasswords, getPassword, savePassword } from "../api/api_root";
+import { updatePassword, deletePassword, getAllPasswords, getPassword, savePassword } from "../api/api_root";
 import {
   Modal,
   Box,
@@ -24,6 +24,8 @@ import {
 } from "@mui/material";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useAuth } from "../contexts/AuthContext";
+import DeleteIcon from "@mui/icons-material/Delete";
+import UpdateIcon from "@mui/icons-material/Update";
 
 interface FormData {
   website: string;
@@ -45,6 +47,7 @@ export default function ItemContent() {
   const [showNotification, setShowNotification] = useState(false);
   const [passwords, setPasswords] = useState<Password[]>([]);
   const [revealedPasswords, setRevealedPasswords] = useState<Password[]>([]);
+  const [editPasswordData, setEditPasswordData] = useState<Password | null>(null);
   const { token } = useAuth();
 
   const handleRevealPassword = async (
@@ -76,6 +79,54 @@ export default function ItemContent() {
     }
   };
 
+  const handleUpdatePassword = async (passmaster_id: string, token: string | null) => {
+    try {
+      if (!token) {
+        throw new Error("Token is null");
+      }
+      const passwordData = await getPassword(passmaster_id, token);
+  
+      const updatedPasswordData = {
+        id: passmaster_id,
+        website: passwordData.website,
+        email: passwordData.email,
+        username: passwordData.username,
+        password: passwordData.password,
+      };
+  
+      await updatePassword(passmaster_id, updatedPasswordData, token);
+      console.log('Password updated successfully!');
+    } catch (error) {
+      console.error('Error while updating password', error);
+    }
+  };  
+  
+  
+  const handleDeletePassword = async (passmaster_id: string, token: string | null) => {
+    try {
+      if (!token) {
+        throw new Error("Token is null");
+      }
+      await deletePassword(passmaster_id, token);
+      console.log('Password deleted successfully!');
+    } catch (error) {
+      console.error('Error while deleting password', error);
+    }
+  };
+
+  const handleRefreshPasswords = async () => {
+    try {
+      if (token) {
+        const passwords = await getAllPasswords(token);
+        setPasswords(passwords);
+        console.log('Passwords refreshed successfully!');
+      }
+    } catch (error) {
+      console.error('Error while refreshing passwords', error);
+    }
+  };
+
+
   const {
     register,
     handleSubmit,
@@ -95,16 +146,33 @@ export default function ItemContent() {
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    console.log("OnSubmit triggered with data: ", data);
+    console.log('OnSubmit triggered with data: ', data);
     setOpen(false);
+    
     if (token) {
       console.log(data);
       console.log(token);
+      
       try {
-        await savePassword(data, token);
+        if (editPasswordData) {
+          const updatedPasswordData = {
+            ...editPasswordData,
+            website: data.website,
+            email: data.email,
+            username: data.username,
+          };
+          await updatePassword(editPasswordData.id, updatedPasswordData, token);
+          
+          console.log('Password updated successfully!');
+        } else {
+          await savePassword(data, token);
+          
+          console.log('Password submitted successfully!');
+        }
+        
         setShowNotification(true);
       } catch (error) {
-        console.error("Error while saving password", error);
+        console.error('Error while saving/updating password', error);
       }
     }
   };
@@ -170,7 +238,7 @@ export default function ItemContent() {
                   + Add Password
                 </Button>
                 <Tooltip title="Reload">
-                  <IconButton>
+                  <IconButton onClick={handleRefreshPasswords}>
                     <RefreshIcon color="inherit" sx={{ display: "block" }} />
                   </IconButton>
                 </Tooltip>
@@ -197,6 +265,12 @@ export default function ItemContent() {
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
                     Password
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
+                    Update
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
+                    Delete
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -231,6 +305,16 @@ export default function ItemContent() {
                         </Button>
                       )}
                     </TableCell>
+                    <TableCell>
+                      <IconButton sx={{ color: "#fff" }} onClick={() => handleUpdatePassword(password.id, token)}>
+                        <UpdateIcon />
+                      </IconButton>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton sx={{ color: "rgb(0, 72, 189)" }} onClick={() => handleDeletePassword(password.id, token)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -260,25 +344,28 @@ export default function ItemContent() {
             }}
           >
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              Add Password
+            {editPasswordData ? 'Update Password' : 'Add Password'}
             </Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
               <TextField
                 fullWidth
                 label="Website"
                 {...register("website", { required: true })}
+                defaultValue={editPasswordData?.website || ""}
               />
               {errors.website && <span>This field is required</span>}
               <TextField
                 fullWidth
                 label="Email"
                 {...register("email", { required: true })}
+                defaultValue={editPasswordData?.email || ""}
               />
               {errors.email && <span>This field is required</span>}
               <TextField
                 fullWidth
                 label="Username"
                 {...register("username", { required: true })}
+                defaultValue={editPasswordData?.username || ""}
               />
               {errors.username && <span>This field is required</span>}
               <TextField
@@ -286,6 +373,7 @@ export default function ItemContent() {
                 label="Password"
                 type="password"
                 {...register("password", { required: true })}
+                defaultValue={editPasswordData?.password || ""}
               />
               {errors.password && <span>This field is required</span>}
               <Button type="submit" variant="contained" color="primary">
